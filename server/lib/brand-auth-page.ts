@@ -40,6 +40,19 @@ export function brandAuthPage(html: string, appBasePath = ""): string {
   const splash = `<section class="sl-splash" aria-hidden="true"><div class="sl-splash-inner">
     <div class="sl-splash-logo">${logoLockupSvg("sl-logo--doodle")}</div>
   </div></section>`;
+  // The right-hand column starts as a simple welcome: the demo is the main
+  // way in; the framework's sign-in form waits behind a link (and opens by
+  // itself when the visitor already chose it this session or the URL carries
+  // an auth result to show). A <section>, not a <div>, for the same reason as
+  // the splash.
+  const entry = `<section class="sl-auth-entry" aria-labelledby="sl-entry-title">
+    <h1 id="sl-entry-title">Welcome</h1>
+    <p class="sl-entry-sub">See how a shop's books keep themselves. No sign-up, nothing to remember.</p>
+    <button type="button" class="sl-entry-demo" data-sl-try-demo>Try the demo</button>
+    <p class="sl-entry-note" data-sl-try-demo-status role="status">Opens your own copy of a sample provisions shop.</p>
+    <div class="sl-entry-divider"><span>or</span></div>
+    <button type="button" class="sl-entry-signin" data-sl-show-signin>Sign in or create an account</button>
+  </section>`;
   const aside = `<aside class="sl-auth-brand" aria-label="About Shop Ledger">
   <div class="sl-auth-logo">${logoLockupSvg("sl-logo--on-dark sl-logo--intro")}</div>
   <h2 class="sl-auth-title">Your shop&rsquo;s books, <span>kept by talking.</span></h2>
@@ -52,7 +65,8 @@ export function brandAuthPage(html: string, appBasePath = ""): string {
   // before the splash is parsed, so it never flashes. Same key as the app's
   // opening screen, so the app doesn't repeat it either.
   const splashOnce = `<script>try{if(sessionStorage.getItem("shop-ledger:splash-seen"))document.documentElement.classList.add("sl-splash-seen");else sessionStorage.setItem("shop-ledger:splash-seen","1")}catch(e){}</script>`;
-  return `${style}${splashOnce}${splash}${aside}${html}`;
+  const formChoice = `<script>try{var q=location.search;if(sessionStorage.getItem("shop-ledger:show-signin")||/[?&](error|token|code|verify|reset|email|invite)=/i.test(q))document.documentElement.classList.add("sl-show-signin")}catch(e){}</script>`;
+  return `${style}${splashOnce}${formChoice}${splash}${aside}${entry}${html}`;
 }
 
 /**
@@ -72,9 +86,12 @@ var base=${basePath};
 function hex(n){var a=new Uint8Array(n);crypto.getRandomValues(a);return Array.prototype.map.call(a,function(b){return("0"+b.toString(16)).slice(-2)}).join("")}
 function post(path,body){return fetch(base+path,{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})}
 document.addEventListener("click",function(e){
+var show=e.target&&e.target.closest?e.target.closest("[data-sl-show-signin]"):null;
+if(show){document.documentElement.classList.add("sl-show-signin");try{sessionStorage.setItem("shop-ledger:show-signin","1")}catch(_){}
+setTimeout(function(){var f=document.querySelector(".auth-page input,.auth-page button");if(f)f.focus()},50);return}
 var btn=e.target&&e.target.closest?e.target.closest("[data-sl-try-demo]"):null;
 if(!btn||btn.disabled)return;
-var label=btn.textContent,status=document.querySelector("[data-sl-try-demo-status]");
+var label=btn.textContent,status=btn.parentNode&&btn.parentNode.querySelector("[data-sl-try-demo-status]");
 btn.disabled=true;btn.textContent="Opening the sample shop\u2026";
 var cred={email:"visitor-"+hex(5)+"@demo.shop-ledger.invalid",password:hex(18)};
 post("/_agent-native/auth/register",{email:cred.email,password:cred.password,callbackURL:base+"/shop?demo=1"})
@@ -149,6 +166,57 @@ body {
 }
 .sl-splash-logo { width: min(320px, 76vw); }
 @keyframes sl-splash-out { to { opacity: 0; visibility: hidden; } }
+/* Right column: welcome card first, the framework form only on request. */
+.sl-auth-entry {
+  align-self: center;
+  justify-self: center;
+  width: min(420px, calc(100% - 32px));
+  margin: 32px auto 48px;
+  padding: 28px;
+  background: #fff;
+  border: 2px solid ${NAVY};
+  border-radius: 8px 24px 8px 8px;
+  box-shadow: 6px 6px 0 #6C63E1;
+  color: ${NAVY};
+}
+@media (min-width: 960px) {
+  .sl-auth-entry, .auth-page { grid-column: 2; grid-row: 1; }
+}
+.sl-auth-entry h1 { margin: 0 0 6px; font: 700 1.6rem/1.15 "Space Grotesk Variable", "Space Grotesk", system-ui, sans-serif; letter-spacing: -0.02em; }
+.sl-entry-sub { margin: 0 0 20px; color: ${MUTED}; font-size: 15px; line-height: 1.5; }
+.sl-entry-demo {
+  appearance: none;
+  width: 100%;
+  padding: 14px 18px;
+  border: 0;
+  border-radius: 8px;
+  background: ${NAVY};
+  color: #fff;
+  font: 600 16px/1.2 "Poppins", system-ui, sans-serif;
+  cursor: pointer;
+}
+.sl-entry-demo:hover { background: ${LINK}; }
+.sl-entry-demo:focus-visible, .sl-entry-signin:focus-visible { outline: 3px solid ${PINK}; outline-offset: 2px; }
+.sl-entry-demo:disabled { cursor: progress; opacity: 0.85; }
+.sl-entry-note { margin: 8px 0 0; color: ${MUTED}; font-size: 13px; text-align: center; }
+.sl-entry-divider { display: flex; align-items: center; gap: 10px; margin: 20px 0 14px; color: ${MUTED}; font-size: 13px; }
+.sl-entry-divider::before, .sl-entry-divider::after { content: ""; flex: 1; height: 1px; background: ${PINK}; }
+.sl-entry-signin {
+  appearance: none;
+  width: 100%;
+  padding: 12px 18px;
+  border: 1px solid ${LINE};
+  border-radius: 8px;
+  background: #fff;
+  color: ${NAVY};
+  font: 600 15px/1.2 "Poppins", system-ui, sans-serif;
+  cursor: pointer;
+}
+.sl-entry-signin:hover { background: ${SOFT}; }
+html:not(.sl-show-signin) .auth-page { display: none !important; }
+.sl-show-signin .sl-auth-entry { display: none; }
+@media (min-width: 960px) { .sl-auth-brand .sl-auth-demo { display: none; } }
+
 .sl-auth-demo { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
 .sl-auth-demo-btn {
   appearance: none;
