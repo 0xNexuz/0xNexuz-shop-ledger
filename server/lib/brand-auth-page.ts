@@ -1,9 +1,10 @@
 import { BRAND_CSS, heroSceneHtml } from "../../shared/brand-art.js";
+import { LOGO_CSS, logoLockupSvg } from "../../shared/brand-logo.js";
 
 /**
  * Brands the framework's sign-in page (rendered by the toolkit) for Shop
- * Ledger: a navy panel with the hero scene beside the sign-in card, the
- * FutureUni fonts, and a light card. The framework's markup, scripts and form
+ * Ledger: a navy panel with the animated logo and the hero scene beside the
+ * sign-in card, the FutureUni fonts, and a light card. The framework's markup, scripts and form
  * behaviour are left untouched; this only adds a stylesheet and one aside.
  */
 export function brandAuthPage(html: string, appBasePath = ""): string {
@@ -23,9 +24,9 @@ export function brandAuthPage(html: string, appBasePath = ""): string {
     )
     .join("");
 
-  const style = `<style data-shop-ledger-brand>${fonts}${BRAND_CSS}${AUTH_CSS}</style>`;
+  const style = `<style data-shop-ledger-brand>${fonts}${BRAND_CSS}${LOGO_CSS}${AUTH_CSS}</style>`;
   const aside = `<aside class="sl-auth-brand" aria-label="About Shop Ledger">
-  <p class="sl-auth-wordmark">Shop Ledger</p>
+  <div class="sl-auth-logo">${logoLockupSvg("sl-logo--on-dark sl-logo--intro")}</div>
   <h2 class="sl-auth-title">Your shop&rsquo;s books, <span>kept by talking.</span></h2>
   <div class="sl-auth-paper">${heroSceneHtml()}</div>
   <p class="sl-auth-note">Say what happened. The agent writes it down, keeps stock and debts straight, and drafts reminders that only you can approve.</p>
@@ -72,13 +73,10 @@ body {
   color: #fff;
 }
 @media (min-width: 960px) { .sl-auth-brand { padding: 48px clamp(40px, 6vw, 96px); min-height: 100vh; } }
-.sl-auth-wordmark {
-  margin: 0;
-  font-family: "Space Grotesk Variable", "Space Grotesk", system-ui, sans-serif;
-  font-weight: 700;
-  font-size: 18px;
-  letter-spacing: -0.01em;
-}
+.sl-auth-logo { width: min(250px, 72vw); }
+@media (min-width: 960px) { .sl-auth-logo { width: clamp(260px, 24vw, 360px); } }
+/* The scene starts once the logo has landed. */
+.sl-auth-paper { --sl-t0: 1.1s; }
 .sl-auth-title {
   margin: 0;
   font-family: "Space Grotesk Variable", "Space Grotesk", system-ui, sans-serif;

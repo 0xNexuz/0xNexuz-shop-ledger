@@ -1,10 +1,10 @@
 {
   "name": "Shop Ledger",
   "short_name": "Shop Ledger",
-  "description": "Workspace app for Shop Ledger.",
+  "description": "Your shop's books, kept by talking. Say what happened; the agent records sales, stock and debts.",
   "start_url": "./home",
-  "background_color": "#111111",
-  "theme_color": "#18181B",
+  "background_color": "#000B39",
+  "theme_color": "#000B39",
   "icons": [
     {
       "src": "icon-192.svg",

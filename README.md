@@ -51,7 +51,7 @@ These live in the actions, not in the prompt, so neither the agent nor a buggy s
 | WhatsApp hand-off | **Real** `wa.me` deep link with the text prefilled; sending is done by the owner in WhatsApp |
 | Agent turning sentences into entries | Implemented through the framework's agent and the actions above; **unverified until an AI key is connected** (Settings → "Use Builder.io" or a personal key) |
 | Evening reminder drafts | The button asks the agent to create a scheduled automation; **unverified** for the same reason |
-| Hosted deploy (Vercel + Supabase Postgres) | **Not yet done** |
+| Hosted deploy (Vercel + Neon Postgres; no Supabase needed) | **Not yet done** |
 
 ## Run it
 

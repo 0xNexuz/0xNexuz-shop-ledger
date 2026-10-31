@@ -12,42 +12,74 @@
 const LINE =
   'fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"';
 
-/** The shop owner: gele, open exercise book, mid-sentence. */
-export const SHOP_OWNER_SVG = `<svg viewBox="0 0 360 400" ${LINE} stroke-width="5" role="img" aria-label="A shop owner in a gele holding her open exercise book">
-  <g class="sl-cloth">
-    <path pathLength="1" d="M106 150 C 84 128, 82 92, 110 76 C 128 66, 150 70, 164 80 C 176 46, 222 18, 268 30 C 310 42, 318 96, 290 128 C 280 140, 270 146, 258 152 Z" style="fill:var(--sl-cloth)"/>
-    <path pathLength="1" d="M258 152 C 282 150, 306 158, 318 176 C 300 172, 284 172, 266 174 Z" style="fill:var(--sl-cloth)"/>
-    <path pathLength="1" d="M106 150 C 148 132, 214 132, 258 152 L 250 172 C 210 154, 154 154, 116 170 Z" style="fill:var(--sl-cloth)"/>
-    <path pathLength="1" d="M120 130 C 126 104, 150 94, 174 100 C 190 72, 236 58, 276 76"/>
-    <path pathLength="1" d="M140 140 C 152 122, 172 116, 192 122 C 214 102, 250 98, 280 112"/>
-    <path pathLength="1" d="M164 80 C 170 88, 174 94, 174 100"/>
-  </g>
+/**
+ * The gele's pleats: accordion folds fanning out from the knot at the right
+ * of her head (240, 172), alternating cloth and paper so the folds read.
+ */
+const GELE_PLEATS = [
+  "M202.4 177.3 L105.3 190.9 Q88.6 169.4 89.9 148.2 L202.5 166.1 Z",
+  "M202.5 166.1 L89.9 148.2 Q73.7 117 74.6 91.3 L205.8 155.3 Z",
+  "M205.8 155.3 L74.6 91.3 Q84.8 65.9 109.8 50.6 L212.2 146.1 Z",
+  "M212.2 146.1 L109.8 50.6 Q121.8 22 145 7.5 L221 139.1 Z",
+  "M221 139.1 L145 7.5 Q170.4 0.5 202.7 10.3 L231.5 135 Z",
+  "M231.5 135 L202.7 10.3 Q226.3 0.4 251.4 8.4 L242.7 134.1 Z",
+  "M242.7 134.1 L251.4 8.4 Q270.4 21.6 285.9 52.5 L253.6 136.5 Z",
+  "M253.6 136.5 L285.9 52.5 Q303.6 57.9 312.6 79 L263.4 142.1 Z",
+  "M263.4 142.1 L312.6 79 Q314.2 96.1 303.1 126.2 L270.7 149.7 Z",
+];
+const GELE_EDGE =
+  "M202.4 177.3 L105.3 190.9 Q88.6 169.4 89.9 148.2 Q73.7 117 74.6 91.3 Q84.8 65.9 109.8 50.6 Q121.8 22 145 7.5 Q170.4 0.5 202.7 10.3 Q226.3 0.4 251.4 8.4 Q270.4 21.6 285.9 52.5 Q303.6 57.9 312.6 79 Q314.2 96.1 303.1 126.2 L270.7 149.7 Z";
+
+/**
+ * The shop owner, the one character used everywhere (hero, logo, preloader):
+ * pleated gele, drop earrings, a buba in the gele's colour, her open exercise
+ * book. `weight` is the line weight in the 360 × 400 drawing (5 for large
+ * art, 9 for the logo and icons). Class names are the animation hooks.
+ */
+export function ownerFigure(weight: number): string {
+  const thin = Math.round(weight * 0.7 * 10) / 10;
+  const eye = Math.max(5, Math.round(weight * 0.78 * 10) / 10);
+  const pleats = GELE_PLEATS.map(
+    (d, i) =>
+      `<path pathLength="1" style="--i:${i};--sl-pleat:var(${i % 2 ? "--sl-paper" : "--sl-cloth"});fill:var(--sl-pleat)" stroke-width="${thin}" d="${d}"/>`,
+  ).join("");
+  return `<g class="sl-figure" ${LINE} stroke-width="${weight}">
   <g class="sl-body">
-    <path pathLength="1" d="M122 168 C 114 202, 122 232, 148 250 C 164 260, 198 260, 214 250 C 238 234, 246 202, 242 170"/>
-    <path pathLength="1" d="M166 256 L 164 278"/>
-    <path pathLength="1" d="M200 256 L 202 278"/>
-    <path pathLength="1" d="M164 278 C 118 284, 76 302, 64 346 L 60 398"/>
-    <path pathLength="1" d="M202 278 C 248 284, 290 302, 302 346 L 306 398"/>
-    <path pathLength="1" d="M164 278 Q 183 302 202 278"/>
+    <path pathLength="1" d="M160 262 L158 284 C108 292 70 312 62 352 L58 398 L310 398 L306 352 C298 312 260 292 210 284 L208 262 Z" style="fill:var(--sl-cloth)"/>
+    <path pathLength="1" d="M158 284 C 168 306, 200 306, 210 284" style="fill:var(--sl-paper)"/>
   </g>
-  <g class="sl-face" stroke="none" fill="currentColor">
-    <circle class="sl-eye" cx="162" cy="204" r="5"/>
-    <circle class="sl-eye" cx="208" cy="204" r="5"/>
-    <path class="sl-mouth" d="M174 226 Q 184 240 194 226 Z" stroke="currentColor" stroke-width="4"/>
+  <g class="sl-cloth sl-fan">${pleats}<path pathLength="1" d="${GELE_EDGE}" fill="none"/></g>
+  <g class="sl-body"><path pathLength="1" d="M124 170 C 118 214, 132 250, 160 266 C 174 274, 194 274, 208 266 C 236 250, 250 214, 244 170 C 206 156, 162 156, 124 170 Z" style="fill:var(--sl-paper)"/></g>
+  <g class="sl-cloth sl-wrap">
+    <path pathLength="1" d="M118 184 C 112 150, 140 128, 184 126 C 228 128, 258 150, 252 184 C 232 168, 208 160, 186 168 C 162 160, 138 168, 118 184 Z" style="fill:var(--sl-cloth)"/>
+    <path pathLength="1" d="M134 158 C 150 146, 170 142, 186 146" stroke-width="${thin}"/>
+    <path pathLength="1" d="M200 140 C 220 140, 238 150, 246 162" stroke-width="${thin}"/>
+    <path pathLength="1" d="M236 156 C 252 140, 274 146, 270 166 C 266 182, 246 184, 236 172 Z" style="fill:var(--sl-cloth)"/>
+    <path pathLength="1" d="M244 176 C 258 184, 266 200, 262 214 C 250 204, 244 194, 240 180 Z" style="fill:var(--sl-cloth)"/>
+  </g>
+  <g class="sl-face" stroke-width="${thin}">
+    <circle class="sl-eye" cx="162" cy="210" r="${eye}" fill="currentColor" stroke="none"/>
+    <circle class="sl-eye" cx="208" cy="210" r="${eye}" fill="currentColor" stroke="none"/>
+    <path d="M150 194 C 156 189, 164 189, 170 192"/>
+    <path d="M200 192 C 206 189, 214 189, 220 194"/>
+    <path d="M186 214 C 184 224, 182 230, 190 232"/>
+    <path class="sl-mouth" d="M168 242 C 178 256, 194 256, 204 242 Z" fill="currentColor"/>
+    <path d="M122 214 L 122 228"/><circle cx="122" cy="236" r="8" style="fill:var(--sl-paper)"/>
+    <path d="M246 214 L 246 228"/><circle cx="246" cy="236" r="8" style="fill:var(--sl-paper)"/>
   </g>
   <g class="sl-book">
-    <path d="M90 334 C 130 318, 166 320, 183 334 C 200 320, 236 318, 276 334 L 272 378 C 236 366, 202 368, 183 380 C 164 368, 130 366, 94 378 Z" fill="currentColor"/>
-    <path d="M96 328 C 132 312, 166 314, 183 328 C 200 314, 234 312, 270 328 L 268 366 C 234 354, 200 356, 183 368 C 166 356, 132 354, 98 366 Z" style="fill:var(--sl-paper)"/>
-    <path d="M183 328 L 183 368"/>
-    <path class="sl-ink" pathLength="1" d="M114 336 C 134 330, 150 330, 166 336" stroke-width="3"/>
-    <path class="sl-ink" pathLength="1" d="M114 348 C 134 342, 150 342, 166 348" stroke-width="3"/>
-    <path class="sl-ink" pathLength="1" d="M200 336 C 216 330, 234 330, 252 336" stroke-width="3"/>
-    <path d="M98 352 C 104 344, 114 342, 120 348 C 124 354, 116 360, 106 362" style="fill:var(--sl-paper)"/>
-    <path d="M268 352 C 262 344, 252 342, 246 348 C 242 354, 250 360, 260 362" style="fill:var(--sl-paper)"/>
-    <path d="M94 378 L 88 398"/>
-    <path d="M272 378 L 278 398"/>
+    <path d="M86 334 C 128 318, 166 320, 184 334 C 202 320, 240 318, 282 334 L 278 386 C 240 374, 204 376, 184 388 C 164 376, 128 374, 90 386 Z" fill="currentColor"/>
+    <path d="M92 326 C 130 310, 166 312, 184 326 C 202 312, 238 310, 276 326 L 274 372 C 238 360, 202 362, 184 374 C 166 362, 130 360, 94 372 Z" style="fill:var(--sl-paper)"/>
+    <path d="M184 326 L 184 374"/>
+    <path class="sl-ink" pathLength="1" d="M114 340 C 132 334, 150 334, 166 340" stroke-width="${thin}"/>
+    <path class="sl-ink" pathLength="1" d="M114 354 C 132 348, 150 348, 166 354" stroke-width="${thin}"/>
+    <path class="sl-ink" pathLength="1" d="M202 340 C 220 334, 238 334, 256 340" stroke-width="${thin}"/>
   </g>
-</svg>`;
+</g>`;
+}
+
+/** The shop owner: gele, open exercise book, mid-sentence. */
+export const SHOP_OWNER_SVG = `<svg viewBox="0 -4 360 404" role="img" aria-label="A shop owner in a pleated gele holding her open exercise book">${ownerFigure(5)}</svg>`;
 
 /** Empty ledger: an open exercise book with a pencil across it. */
 export const SPOT_BOOK_SVG = `<svg viewBox="0 0 160 120" ${LINE} stroke-width="4" aria-hidden="true">
@@ -190,22 +222,24 @@ export const BRAND_CSS = `
 
 .sl-spot { --sl-paper: #fff; --sl-cloth: #FAD8FE; color: #000B39; }
 
+/* --sl-t0 shifts the whole scene later, e.g. to follow the logo's entrance. */
 @media (prefers-reduced-motion: no-preference) {
   .sl-scene .sl-cloth path, .sl-scene .sl-body path {
     stroke-dasharray: 1;
     stroke-dashoffset: 1;
-    animation: sl-draw 1.1s cubic-bezier(.6, .1, .3, 1) forwards;
+    fill-opacity: 0;
+    animation: sl-draw 1.1s cubic-bezier(.6, .1, .3, 1) forwards, sl-fill .5s ease forwards;
+    animation-delay: var(--sl-t0, 0s), calc(var(--sl-t0, 0s) + .8s);
   }
-  .sl-scene .sl-cloth path { fill-opacity: 0; animation: sl-draw 1.1s cubic-bezier(.6, .1, .3, 1) forwards, sl-fill .5s ease .8s forwards; }
-  .sl-scene .sl-body path { animation-delay: .2s; }
-  .sl-scene .sl-face, .sl-scene .sl-book { opacity: 0; animation: sl-fade .4s ease .9s forwards; }
-  .sl-scene .sl-ink { stroke-dasharray: 1; stroke-dashoffset: 1; animation: sl-draw .5s ease 3.05s forwards; }
-  .sl-scene .sl-mouth { transform-box: fill-box; transform-origin: center top; animation: sl-talk .18s ease-in-out 1.35s 7 alternate; }
-  .sl-scene .sl-eye { transform-box: fill-box; transform-origin: center; animation: sl-blink 5s ease 4.5s infinite; }
-  .sl-bubble { opacity: 0; transform: scale(.88); transform-origin: 100% 85%; animation: sl-pop .35s cubic-bezier(.3, 1.4, .5, 1) 1.1s forwards; }
-  .sl-word { opacity: 0; animation: sl-fade .18s ease forwards; animation-delay: calc(1.35s + var(--i) * 85ms); }
-  .sl-receipt { opacity: 0; transform: translateY(14px); animation: sl-rise .45s cubic-bezier(.2, .9, .3, 1) 2.85s forwards; }
-  .sl-receipt-badge { display: inline-block; transform: scale(.6); opacity: 0; animation: sl-pop .3s cubic-bezier(.3, 1.6, .5, 1) 3.25s forwards; }
+  .sl-scene .sl-body path { animation-delay: calc(var(--sl-t0, 0s) + .2s), calc(var(--sl-t0, 0s) + .9s); }
+  .sl-scene .sl-face, .sl-scene .sl-book { opacity: 0; animation: sl-fade .4s ease calc(var(--sl-t0, 0s) + .9s) forwards; }
+  .sl-scene .sl-ink { stroke-dasharray: 1; stroke-dashoffset: 1; animation: sl-draw .5s ease calc(var(--sl-t0, 0s) + 3.05s) forwards; }
+  .sl-scene .sl-mouth { transform-box: fill-box; transform-origin: center top; animation: sl-talk .18s ease-in-out calc(var(--sl-t0, 0s) + 1.35s) 7 alternate; }
+  .sl-scene .sl-eye { transform-box: fill-box; transform-origin: center; animation: sl-blink 5s ease calc(var(--sl-t0, 0s) + 4.5s) infinite; }
+  .sl-bubble { opacity: 0; transform: scale(.88); transform-origin: 100% 85%; animation: sl-pop .35s cubic-bezier(.3, 1.4, .5, 1) calc(var(--sl-t0, 0s) + 1.1s) forwards; }
+  .sl-word { opacity: 0; animation: sl-fade .18s ease forwards; animation-delay: calc(var(--sl-t0, 0s) + 1.35s + var(--i) * 85ms); }
+  .sl-receipt { opacity: 0; transform: translateY(14px); animation: sl-rise .45s cubic-bezier(.2, .9, .3, 1) calc(var(--sl-t0, 0s) + 2.85s) forwards; }
+  .sl-receipt-badge { display: inline-block; transform: scale(.6); opacity: 0; animation: sl-pop .3s cubic-bezier(.3, 1.6, .5, 1) calc(var(--sl-t0, 0s) + 3.25s) forwards; }
 }
 @keyframes sl-draw { to { stroke-dashoffset: 0; } }
 @keyframes sl-fill { to { fill-opacity: 1; } }
