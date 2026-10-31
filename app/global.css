@@ -1,4 +1,7 @@
-@import "@fontsource-variable/inter";
+@import "@fontsource-variable/space-grotesk";
+@import "@fontsource/poppins/400.css";
+@import "@fontsource/poppins/500.css";
+@import "@fontsource/poppins/600.css";
 
 @import "tailwindcss";
 @import "@agent-native/toolkit/styles.css";
@@ -6,34 +9,40 @@
 @source "./**/*.{ts,tsx}";
 
 :root {
+  /* FutureUni design system: navy #000B39, white, pastel pink #FAD8FE,
+     blue #0050A5, violet #6C63E1 (never a text colour). */
   --background: 0 0% 100%;
-  --foreground: 0 0% 10%;
+  --foreground: 229 100% 11%;
   --card: 0 0% 100%;
-  --card-foreground: 0 0% 10%;
+  --card-foreground: 229 100% 11%;
   --popover: 0 0% 100%;
-  --popover-foreground: 0 0% 10%;
-  --primary: 0 0% 15%;
+  --popover-foreground: 229 100% 11%;
+  --primary: 229 100% 11%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 0 0% 95%;
-  --secondary-foreground: 0 0% 15%;
-  --muted: 0 0% 95%;
-  --muted-foreground: 0 0% 43%;
-  --accent: 0 0% 95%;
-  --accent-foreground: 0 0% 15%;
-  --destructive: 0 91% 71%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 0 0% 90%;
-  --input: 0 0% 90%;
-  --ring: 0 0% 40%;
+  --secondary: 294 93% 92%;
+  --secondary-foreground: 229 100% 11%;
+  --muted: 292 70% 97%;
+  --muted-foreground: 242 18% 35%;
+  --accent: 294 93% 92%;
+  --accent-foreground: 229 100% 11%;
+  --destructive: 3 71% 41%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 287 52% 86%;
+  --input: 260 13% 50%;
+  --ring: 229 100% 11%;
   --radius: 0.5rem;
-  --sidebar-background: 0 0% 97%;
-  --sidebar-foreground: 0 0% 43%;
-  --sidebar-primary: 0 0% 15%;
+  --sidebar-background: 292 70% 98%;
+  --sidebar-foreground: 242 18% 35%;
+  --sidebar-primary: 229 100% 11%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 0 0% 95%;
-  --sidebar-accent-foreground: 0 0% 15%;
-  --sidebar-border: 0 0% 90%;
-  --sidebar-ring: 0 0% 40%;
+  --sidebar-accent: 294 93% 92%;
+  --sidebar-accent-foreground: 229 100% 11%;
+  --sidebar-border: 287 52% 86%;
+  --sidebar-ring: 229 100% 11%;
+  --brand-violet: 244 68% 64%;
+  --brand-blue: 211 100% 32%;
+  --success: 150 74% 24%;
+  --warning: 29 100% 30%;
   --chat-sidebar-width: 17.5rem;
   --chat-sidebar-content-inset: 0.5rem;
   --chat-sidebar-row-padding: 0.75rem;
@@ -229,41 +238,52 @@
 }
 
 .dark {
-  --background: 0 0% 13%;
-  --foreground: 0 0% 90%;
-  --card: 0 0% 16.47%;
-  --card-foreground: 0 0% 90%;
-  --popover: 0 0% 15%;
-  --popover-foreground: 0 0% 90%;
-  --primary: 0 0% 75%;
-  --primary-foreground: 0 0% 10%;
-  --secondary: 0 0% 18%;
-  --secondary-foreground: 0 0% 90%;
-  --muted: 0 0% 16%;
-  --muted-foreground: 0 0% 60%;
-  --accent: 0 0% 18%;
-  --accent-foreground: 0 0% 90%;
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 0 0% 24%;
-  --input: 0 0% 24%;
-  --ring: 0 0% 60%;
+  --background: 229 100% 7%;
+  --foreground: 0 0% 96%;
+  --card: 229 70% 11%;
+  --card-foreground: 0 0% 96%;
+  --popover: 229 70% 11%;
+  --popover-foreground: 0 0% 96%;
+  --primary: 294 93% 92%;
+  --primary-foreground: 229 100% 11%;
+  --secondary: 244 40% 22%;
+  --secondary-foreground: 0 0% 96%;
+  --muted: 229 60% 13%;
+  --muted-foreground: 260 20% 75%;
+  --accent: 244 40% 22%;
+  --accent-foreground: 0 0% 96%;
+  --destructive: 3 80% 62%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 244 30% 24%;
+  --input: 260 20% 55%;
+  --ring: 294 93% 92%;
   --radius: 0.5rem;
-  --sidebar-background: 0 0% 10%;
-  --sidebar-foreground: 0 0% 60%;
-  --sidebar-primary: 0 0% 75%;
-  --sidebar-primary-foreground: 0 0% 10%;
-  --sidebar-accent: 0 0% 16%;
-  --sidebar-accent-foreground: 0 0% 90%;
-  --sidebar-border: 0 0% 20%;
-  --sidebar-ring: 0 0% 60%;
+  --sidebar-background: 229 100% 6%;
+  --sidebar-foreground: 260 20% 75%;
+  --sidebar-primary: 294 93% 92%;
+  --sidebar-primary-foreground: 229 100% 11%;
+  --sidebar-accent: 244 40% 20%;
+  --sidebar-accent-foreground: 0 0% 96%;
+  --sidebar-border: 244 30% 20%;
+  --sidebar-ring: 294 93% 92%;
+  --brand-violet: 244 68% 70%;
+  --brand-blue: 211 90% 70%;
+  --success: 150 55% 60%;
+  --warning: 32 95% 65%;
+}
+
+@theme inline {
+  --font-display: "Space Grotesk Variable", "Space Grotesk", system-ui, sans-serif;
+  --color-brand-violet: hsl(var(--brand-violet));
+  --color-brand-blue: hsl(var(--brand-blue));
+  --color-success: hsl(var(--success));
+  --color-warning: hsl(var(--warning));
 }
 
 @layer base {
   body {
     @apply bg-background text-foreground;
-    font-family: "Inter Variable", "Inter", sans-serif;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    font-family: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
   }
 }
 
@@ -280,4 +300,21 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--muted-foreground) / 0.34);
+}
+
+/* FutureUni signature: one generous top-right corner on brand blocks. */
+.brand-corner {
+  border-top-right-radius: 24px;
+}
+
+/* Receipt-style dotted leader between a ledger line and its amount. */
+.ledger-leader {
+  flex: 1 1 auto;
+  min-width: 1rem;
+  border-bottom: 1px dotted hsl(var(--muted-foreground) / 0.45);
+  transform: translateY(-0.3em);
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
 }

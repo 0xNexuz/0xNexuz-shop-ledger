@@ -18,6 +18,9 @@ export interface NavigationState {
   path?: string;
   publicPath?: string;
   threadId?: string;
+  /** Shop screen: "today", "ledger", "customers" or "stock". */
+  shopTab?: string;
+  customerId?: string;
 }
 
 export function useNavigationState() {
@@ -64,15 +67,19 @@ function matchesPathPrefix(pathname: string, prefix: string): boolean {
 
 export function navigationStateForPath(pathname: string): NavigationState {
   const threadId = threadIdFromPath(pathname);
+  const shopMatch = /^\/shop(?:\/(ledger|customers|stock))?(?:\/([^/]+))?\/?$/.exec(pathname);
   return {
     view: viewForPath(pathname),
     path: pathname,
     publicPath: appPathFromLocalRoute(pathname),
     ...(threadId ? { threadId } : {}),
+    ...(shopMatch ? { shopTab: shopMatch[1] ?? "today" } : {}),
+    ...(shopMatch?.[1] === "customers" && shopMatch[2] ? { customerId: decodeURIComponent(shopMatch[2]) } : {}),
   };
 }
 
 function viewForPath(pathname: string): string {
+  if (pathname === "/shop" || pathname.startsWith("/shop/")) return "shop";
   if (isChatPathname(pathname)) return "chat";
   if (pathname === HOME_PATH) return "home";
   if (pathname.startsWith("/database")) return "database";
@@ -88,6 +95,8 @@ function viewForPath(pathname: string): string {
 
 function pathForView(view?: string): string {
   switch (view) {
+    case "shop":
+      return "/shop";
     case "chat":
     case "ask":
       return NEW_CHAT_PATH;

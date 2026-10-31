@@ -37,12 +37,12 @@ export function AgentInspector({
       browserTabId={TAB_ID}
       openOnChatRunning={chatHomeHandoffActive}
       onFullscreenRequest={openAskAgentFullscreen}
-      emptyStateText={t("chat.inspectEmptyState")}
+      emptyStateText="Tell me what happened in the shop, or ask how it's doing."
       agentPageHref="/settings/agent"
       suggestions={[
-        t("chat.inspectSuggestionCapabilities"),
-        t("chat.inspectSuggestionHello"),
-        t("chat.inspectSuggestionAction"),
+        "How did the shop do today?",
+        "Who owes me money, and who is overdue?",
+        "Draft reminders for overdue customers",
       ]}
     >
       {children}
