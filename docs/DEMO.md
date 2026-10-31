@@ -1,35 +1,28 @@
-# Demo script (about 3 minutes)
+# Demo script (about 3½ minutes)
 
-Record with [Clips](https://clips.agent-native.com): **Record a clip**, pick the browser window, and leave the link public (the default). The hackathon needs the clip viewable without a login.
+Recorded with [Clips](https://clips.agent-native.com) on the live app, **https://shop-ledger-peach.vercel.app** (tap **Try the demo**).
 
-## Before recording (5 minutes)
+The video shows seven Agent-Native moments:
 
-1. Open **https://shop-ledger-peach.vercel.app** in a private (incognito) Chrome window, so you get a fresh sample shop.
-2. Tap **Try the demo**, then type `how did we do today?` in the ask bar. If the agent answers, it's ready. If it says "high demand", wait a minute and try again before you start recording.
-3. Close that window and open a new private one for the real take.
-4. Have a notebook photo ready on the computer. Write a few lines on paper and photograph it, for example:
-   - `Baba Sule 8,500 – Friday`
-   - `Iya Bisi 4k`
-   - `Spaghetti 24 packs @ 950`
-5. Zoom the browser to 110–125% so text reads well in the video. Turn off notifications.
+1. **One set of actions, two hands.** The agent records a sale from a sentence; the same rule then fires when you use the New sale screen by hand.
+2. **The screen updates as the agent writes.** No refresh: the daybook line appears with an Agent tag.
+3. **Rules live in the server, not the prompt.** The credit check stops a late payer for the agent and for the screen alike.
+4. **The agent sees and moves the screen.** "Show me Chinedu" opens his page; "what's his credit like?" is answered about the customer on screen.
+5. **The agent hands work to the owner, never the reverse.** A notebook photo becomes a draft only the owner can add; reminders are drafts only the owner can approve.
+6. **It runs without being asked.** The evening close runs on the framework's daily job at 7 pm and drafts reminders.
+7. **It learns the shop.** A nickname taught once works in every action after.
 
-## The take
-
-| Time | Do | Say |
+| Time | On screen | Shows |
 | --- | --- | --- |
-| 0:00 | Welcome screen | "Millions of shops keep their books in an exercise book. Shop Ledger keeps them by talking." |
-| 0:10 | Tap **Try the demo** | "Judges and visitors get a private sample shop in one tap." |
-| 0:20 | Type (or tap the mic and say): `I sell 2 bag rice give Mama Ngozi, she pay 50k, remain go come Friday` | "I can write the way I talk, in Pidgin, Yoruba, Hausa or Igbo." Point at the new daybook line with the **Agent** tag and the amount owed going up. |
-| 0:45 | Type: `give Chinedu 2 paint garri on credit` | When the agent says Chinedu is 12 days late: "Before more credit goes out, the server checks how he has paid. It asks me first." Reply `yes go ahead` and point at the entry. |
-| 1:15 | Tap **Snap your notebook**, choose the photo | "My old notebook comes in with a photo." When the card appears: "Nothing is in my books until I tick and add." Untick one line, tap **Add**. |
-| 1:45 | Type: `Mama Pikin na Mama Ngozi` then `Mama Pikin pay 20k transfer` | "It learns my shop's nicknames and remembers them." |
-| 2:05 | Tap **Close the day now** (or type `close the day`) | "Every evening at 7 it closes the day by itself and drafts a reminder for each late payer." |
-| 2:20 | In Reminders, tap **Approve** on one | "Only I can approve. The agent can't, even if it tries." WhatsApp opens with the message (no need to send). |
-| 2:35 | Tap **Check my books** | "Every sale, payment and void is in an append-only ledger, and the books prove they balance." |
-| 2:50 | Show Today on a phone-sized window, or end on Today | "Same actions for the screens and the agent, rules in the server, and the owner approves anything that leaves the shop." |
+| 0:00 | Welcome screen, **Try the demo** | Usefulness |
+| 0:15 | `I sell 2 bag rice give Mama Ngozi, she pay 50k, remain go come Friday` → daybook line with the Agent tag | 1, 2 |
+| 0:45 | `give Chinedu 2 paint garri on credit` → the agent says he is 12 days late and asks → `yes, go ahead` | 3 |
+| 1:15 | **New sale** by hand for Chinedu → the same warning | 1, 3 |
+| 1:30 | `show me Chinedu` → his page opens; `what's his credit like?` | 4 |
+| 1:50 | **Snap your notebook** → review card → untick one line → **Add** | 5 |
+| 2:20 | `Mama Pikin na Mama Ngozi`, then `Mama Pikin pay 20k transfer` | 7 |
+| 2:40 | **Close the day now**; ask the agent to approve a reminder (it can't); **Approve** → WhatsApp opens | 5, 6 |
+| 3:05 | **Check my books** → the books balance | 3 |
+| 3:20 | End on Today | All |
 
-## If something goes wrong
-
-- The agent says "high demand": stop, wait a minute, and retake from that step. It's Gemini's free tier, not the app.
-- The agent asks "which one?": that's the app refusing to guess; answer it on camera.
-- A rejection like "only 8 cartons in stock" is a feature: say so.
+Before recording: check the agent answers ("how did we do today?"); Gemini's free tier sometimes says "high demand", so wait a minute and retry. Record from a fresh private window so the sample shop is clean.
