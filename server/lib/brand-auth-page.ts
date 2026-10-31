@@ -48,7 +48,11 @@ export function brandAuthPage(html: string, appBasePath = ""): string {
   <p class="sl-auth-note">Say what happened. The agent writes it down, keeps stock and debts straight, and drafts reminders that only you can approve.</p>
 </aside>`;
 
-  return `${style}${splash}${aside}${html}`;
+  // Once per browser session: later visits skip straight to the page. Runs
+  // before the splash is parsed, so it never flashes. Same key as the app's
+  // opening screen, so the app doesn't repeat it either.
+  const splashOnce = `<script>try{if(sessionStorage.getItem("shop-ledger:splash-seen"))document.documentElement.classList.add("sl-splash-seen");else sessionStorage.setItem("shop-ledger:splash-seen","1")}catch(e){}</script>`;
+  return `${style}${splashOnce}${splash}${aside}${html}`;
 }
 
 /**
@@ -134,11 +138,14 @@ body {
     place-items: center;
     padding: 16px;
     background: #fff;
-    animation: sl-splash-out .45s ease 1.9s forwards;
+    animation: sl-splash-out .4s ease 1.5s forwards;
   }
   /* The panel's own entrance waits for the splash. */
-  .sl-auth-brand { --sl-logo-t0: 2.05s; }
-  .sl-auth-paper { --sl-t0: 3.2s; }
+  .sl-auth-brand { --sl-logo-t0: 1.6s; }
+  .sl-auth-paper { --sl-t0: 2.7s; }
+  .sl-splash-seen .sl-splash { display: none; }
+  .sl-splash-seen .sl-auth-brand { --sl-logo-t0: 0s; }
+  .sl-splash-seen .sl-auth-paper { --sl-t0: 1.1s; }
 }
 .sl-splash-logo { width: min(320px, 76vw); }
 @keyframes sl-splash-out { to { opacity: 0; visibility: hidden; } }

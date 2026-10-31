@@ -102,7 +102,7 @@ export function Preloader({ instant = false, leaving = false }: { instant?: bool
 
 const SPLASH_SEEN_KEY = "shop-ledger:splash-seen";
 /** How long the opening screen stays up, counted from when the page started loading. */
-const SPLASH_MIN_MS = 1900;
+const SPLASH_MIN_MS = 1500;
 
 function splashAlreadySeen(): boolean {
   try {
