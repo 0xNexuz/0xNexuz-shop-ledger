@@ -5,19 +5,19 @@ Keep this file concise and evidence-based. Update current state in place, append
 ## Project Identity
 
 - **Project name:** Shop Ledger
-- **Repository:** not yet pushed (local repo; GitHub repo pending owner/name from the team)
+- **Repository:** https://github.com/0xNexuz/0xNexuz-shop-ledger (public); Vercel project `shop-ledger` (team xreyy's projects), Git-linked, production branch `main`
 - **Project description:** Agent-native bookkeeping for small shops: say what happened, the agent records sales, credit, payments and stock through shared actions; the owner approves debtor reminders and sends them from WhatsApp.
-- **Current workflow stage:** DEVELOPMENT (P0 complete) → next: hosting (P1)
+- **Current workflow stage:** DEPLOYMENT (P1) → next: AI provider, agent-flow verification, Clips demo, submission
 - **Overall status:** IMPLEMENTED; core ledger, rules and screens VERIFIED locally; agent conversation UNVERIFIED (no AI key in the build environment)
 - **Last updated date:** 2026-10-31
 
 ## Git State
 
-- **Branch:** master
-- **HEAD:** see `git log -1` (M3 commit, 2026-10-31)
-- **Working tree:** clean after the M3 commit
-- **Relevant remote or PR:** none yet
-- **Last verified milestone:** M3: agent instructions, UI-only approval, verify script (2026-10-31)
+- **Branch:** main (brand work fast-forwarded from `brand-refresh`)
+- **HEAD:** see `git log -1`
+- **Working tree:** clean after each commit
+- **Relevant remote or PR:** origin = github.com/0xNexuz/0xNexuz-shop-ledger; pushes to `main` deploy to production
+- **Last verified milestone:** brand refresh + preloader verified locally (2026-10-31); first production deploy started 2026-10-31
 
 ## Hackathon Context
 
@@ -25,10 +25,10 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Organizer:** Builder.io
 - **Tracks:** single ranked pool; recognition categories (Best Overall, Productivity, Most Creative, Best Use of Agent-Native) carry no extra cash
 - **Sponsors:** Builder.io
-- **Deadline:** Mon 2026-11-09 23:59 PT = Tue 2026-11-10 08:59 Lagos (live rules page, checked 2026-10-31; older cached copies said Nov 2, so re-check before submitting)
+- **Deadline:** Mon 2026-11-09 23:59 PT = Tue 2026-11-10 07:59 UTC = 08:59 Lagos (live rules page, re-checked 2026-10-31 evening)
 - **Eligibility:** worldwide, 18+, sanctions apply; per-entry prizes; non-US winners may face up to 30% US withholding
 - **Judging:** Usefulness & Execution 40%, Creativity & Design 20%, Innovation 20%, Cleverness/Use of Agent-Native 20%
-- **Submission:** builder.io/hackathon/submit; required public Clips recording (viewable without login), description incl. team and pre-existing work; GitHub URL and slides optional
+- **Submission:** builder.io/hackathon/submit; required: working Agent-Native app, project description, team + contact details, disclosure of pre-existing work/templates/libraries/third-party assets and what changed during the event, an accessible demo, a public Clips recording of the real app in use (viewable without login), rules agreement; repo and live deploy encouraged, not required; recording a clip alone is not a submission
 - **Official source links:** https://www.builder.io/hackathon/rules · https://www.builder.io/hackathon · https://www.builder.io/hackathon/submit
 
 ## Strategic Decisions
