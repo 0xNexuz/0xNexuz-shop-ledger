@@ -10,6 +10,8 @@ const errors = defineActionErrors("not_found", "invalid_transition", "no_shop");
 export default defineAction({
   description: "Owner marks an approved reminder as sent after sending it on WhatsApp. Owner-only: hidden from the agent.",
   schema: z.object({ shopId: shopIdArg, id: z.string().min(1).describe("Reminder id") }),
+  // Only a signed-in person in the app UI can run this: not the agent, MCP, raw HTTP or the CLI.
+  uiOnly: true,
   agentTool: false,
   outputSchema: reminderOut,
   errors,

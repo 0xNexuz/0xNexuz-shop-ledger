@@ -31,3 +31,30 @@ Use `adding-a-feature` for functional parity and `frontend-design` for a user-fa
 Before building common workspace or agent UI, read `agent-native-toolkit`; for supported customization, read `customizing-agent-native`.
 
 - Guarded verification: run `pnpm agent-native:doctor`; fix findings before done.
+
+## Shop Ledger
+
+Bookkeeper for a small shop. `/shop` Today, `/shop/ledger?day=`, `/shop/customers/:id`, `/shop/stock`. Amounts are naira ("20k" = 20000); days are YYYY-MM-DD in the shop's timezone (Africa/Lagos).
+
+- Record with the actions; the server enforces the rules. Report a rejection with the real figure, never retry with invented numbers: `insufficient_stock`, `credit_needs_customer`, `overpayment`, `void_conflict`. On `unknown_product`/`ambiguous_*`, ask which one.
+- Entries are never edited: fix mistakes with `void-entry`. Stock changes only through sales, restocks and `record-stock-count`.
+- A credit sale to a new name creates the customer. Ask for `dueDate` when the owner says when they'll pay.
+- Reminders: `draft-reminders` only. Approving and sending are owner-only (UI); never claim a reminder was sent.
+- `navigation` adds `shopTab` (today/ledger/customers/stock) and `customerId`.
+
+| Action | Purpose |
+|-|-|
+| get-shop-overview | Day totals, debtors, low stock, recent entries |
+| record-sale | Items sold, paid now, rest on credit |
+| record-payment | Customer pays towards balance |
+| record-restock | Stock arrived |
+| record-stock-count | Set stock to a physical count |
+| void-entry | Reverse a mistaken entry |
+| list-entries / list-customers / get-customer / list-products | Read the books |
+| draft-reminders / list-reminders / update-reminder | Debtor reminders (drafts only) |
+| create-product / update-product / create-customer / update-customer | Catalogue |
+| reconcile-ledger | Prove stock and balances match the entries |
+
+## For coding agents
+
+Read `docs/PROJECT_CONTEXT.md` first: verified status, decisions and the next approved step. Never report a check you did not run; `bash scripts/verify-rules.sh` proves the ledger rules.

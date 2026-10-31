@@ -12,6 +12,9 @@ import { cn } from "@/lib/utils";
 
 import { useShop } from "./shop";
 
+const NIGHTLY_REMINDERS_PROMPT =
+  "Set up a scheduled automation that runs every day at 18:00 UTC (7pm in Lagos). Each run: list customers who owe, and for each one whose promised date has passed and who has no open reminder, use draft-reminders to save a short, respectful WhatsApp message with their exact balance. Only draft: never approve or send. Confirm the schedule back to me.";
+
 export default function ShopToday() {
   const { shop } = useShop();
   const { data } = useActionQuery("get-shop-overview", {});
@@ -123,6 +126,13 @@ export default function ShopToday() {
                 No reminders waiting. The agent drafts them; you approve and send from WhatsApp.
               </p>
             )}
+            <button
+              type="button"
+              onClick={() => askAgent(NIGHTLY_REMINDERS_PROMPT)}
+              className="mt-3 text-sm font-medium text-brand-blue hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              Draft these for me every evening
+            </button>
           </section>
 
           <section aria-labelledby="debtors-heading">

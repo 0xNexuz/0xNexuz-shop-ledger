@@ -29,11 +29,13 @@ export function ReminderCard({ reminder, currency }: { reminder: Reminder; curre
   const [message, setMessage] = useState(reminder.message);
   const onError = (fallback: string) => (error: unknown) => toast.error(actionErrorMessage(error) ?? fallback);
   const approve = useActionMutation("approve-reminder", {
+    uiOnly: true,
     onSuccess: () => toast.success("Approved. Open WhatsApp to send it."),
     onError: onError("Couldn't approve this reminder."),
   });
   const dismiss = useActionMutation("update-reminder", { onError: onError("Couldn't dismiss this reminder.") });
   const markSent = useActionMutation("mark-reminder-sent", {
+    uiOnly: true,
     onSuccess: () => toast.success("Marked as sent."),
     onError: onError("Couldn't update this reminder."),
   });

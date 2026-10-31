@@ -15,7 +15,8 @@ export default defineAction({
     id: z.string().min(1).describe("Reminder id"),
     message: z.string().min(10).max(700).optional().describe("Final text, if the owner edited it"),
   }),
-  // The agent drafts; only the person running the shop can approve.
+  // Only a signed-in person in the app UI can run this: not the agent, MCP, raw HTTP or the CLI.
+  uiOnly: true,
   agentTool: false,
   outputSchema: reminderOut,
   errors,
