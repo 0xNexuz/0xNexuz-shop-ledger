@@ -362,3 +362,11 @@
     opacity: 1;
   }
 }
+
+/* A sideways-scrolling row (quick asks on a phone) without a visible bar. */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

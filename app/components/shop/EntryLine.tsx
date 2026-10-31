@@ -82,41 +82,44 @@ export function EntryLine({ entry, currency, timeZone, showDate }: { entry: Entr
   const credit = entry.kind === "sale" && entry.balanceChange > 0;
 
   return (
-    <li className="group flex items-start gap-3 py-2.5">
-      <time className="tabular w-14 shrink-0 pt-0.5 text-xs text-muted-foreground" dateTime={entry.occurredAt}>
+    <li className="group flex items-start gap-3 py-2">
+      <time className="tabular w-12 shrink-0 pt-px text-xs text-muted-foreground" dateTime={entry.occurredAt}>
         {showDate
           ? new Intl.DateTimeFormat("en-NG", { day: "numeric", month: "short", timeZone }).format(new Date(entry.occurredAt))
           : timeOf(entry.occurredAt, timeZone)}
       </time>
       <div className="min-w-0 flex-1">
-        <div className="flex items-baseline gap-2">
+        <div className="flex items-center gap-2">
           <span className={cn("text-[11px] font-semibold uppercase tracking-wide text-muted-foreground", voided && "line-through")}>
             {entry.kind === "adjustment" && entry.balanceChange !== 0 ? "Opening" : KIND_LABEL[entry.kind]}
           </span>
+          {/* Who wrote it matters when it wasn't the owner: the agent, the nightly job, sample data. */}
+          {entry.source !== "ui" ? <SourceBadge source={entry.source} /> : null}
           <span className="ledger-leader" aria-hidden />
           <span className={cn("tabular font-display text-[15px] font-semibold", amount.tone, voided && "line-through opacity-60")}>
             {amount.text}
           </span>
         </div>
-        <p className={cn("mt-0.5 text-sm leading-snug", voided && "text-muted-foreground line-through")}>
-          {entry.summary.replace(/^\[VOIDED:[^\]]*\]\s*/, "")}
-        </p>
-        <div className="mt-1 flex flex-wrap items-center gap-2">
-          <SourceBadge source={entry.source} />
-          {credit && !voided ? (
-            <span className="text-xs font-medium text-warning">{money(entry.balanceChange, currency)} on credit</span>
-          ) : null}
-          {voided ? <span className="text-xs text-destructive">Voided: {entry.voidReason}</span> : null}
+        <div className="mt-0.5 flex items-start gap-2">
+          <p className={cn("min-w-0 flex-1 text-sm leading-snug", voided && "text-muted-foreground line-through")}>
+            {entry.summary.replace(/^\[VOIDED:[^\]]*\]\s*/, "")}
+            {credit && !voided ? (
+              <span className="whitespace-nowrap text-xs font-medium text-warning"> · {money(entry.balanceChange, currency)} on credit</span>
+            ) : null}
+          </p>
           {!voided ? (
             <button
               type="button"
               onClick={() => setVoiding(true)}
-              className="ml-auto inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-muted-foreground opacity-100 transition-opacity hover:bg-accent hover:text-foreground focus-visible:opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+              aria-label="Void this entry"
+              title="Void"
+              className="-mr-1 shrink-0 rounded p-1 text-muted-foreground opacity-100 transition-opacity hover:bg-accent hover:text-foreground focus-visible:opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
             >
-              <IconArrowBackUp className="size-3.5" /> Void
+              <IconArrowBackUp className="size-3.5" />
             </button>
           ) : null}
         </div>
+        {voided ? <p className="mt-0.5 text-xs text-destructive">Voided: {entry.voidReason}</p> : null}
       </div>
       <VoidDialog entry={entry} open={voiding} onOpenChange={setVoiding} />
     </li>

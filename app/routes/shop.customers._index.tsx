@@ -35,15 +35,17 @@ export default function ShopCustomers() {
   const totalOwed = customers.reduce((sum, c) => sum + c.balance, 0);
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-      <section aria-labelledby="customers-heading" className="space-y-4">
-        <div className="flex flex-wrap items-end justify-between gap-3">
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:gap-8">
+      <section aria-labelledby="customers-heading" className="space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 id="customers-heading" className="font-display text-2xl font-semibold">
+            {/* The Customers tab already names the page; the heading stays for screen readers. */}
+            <h1 id="customers-heading" className="sr-only">
               Customers
             </h1>
             <p className="text-sm text-muted-foreground">
-              {money(totalOwed, shop.currency)} owed across {customers.filter((c) => c.balance > 0).length} accounts
+              <span className="tabular font-display text-base font-semibold text-foreground">{money(totalOwed, shop.currency)}</span>{" "}
+              owed across {customers.filter((c) => c.balance > 0).length} accounts
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -110,18 +112,18 @@ export default function ShopCustomers() {
 
       <aside>
         <form
-          className="brand-corner space-y-3 rounded-lg bg-secondary p-5"
+          className="space-y-3 rounded-lg border border-border bg-card p-4"
           onSubmit={(event) => {
             event.preventDefault();
             if (name.trim().length >= 2) add.mutate({ name: name.trim(), ...(phone.trim() ? { phone: phone.trim() } : {}) });
           }}
         >
-          <h2 className="flex items-center gap-2 font-display text-lg font-semibold">
-            <IconUserPlus className="size-5" /> Add a customer
+          <h2 className="flex items-center gap-2 font-display text-base font-semibold">
+            <IconUserPlus className="size-4" /> Add a customer
           </h2>
           <div className="space-y-1.5">
             <Label htmlFor="new-customer-name">Name</Label>
-            <Input id="new-customer-name" value={name} onChange={(e) => setName(e.target.value)} className="bg-card" maxLength={80} />
+            <Input id="new-customer-name" value={name} onChange={(e) => setName(e.target.value)} maxLength={80} />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="new-customer-phone">Phone (for WhatsApp reminders)</Label>
@@ -131,7 +133,6 @@ export default function ShopCustomers() {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="0803 123 4567"
-              className="bg-card"
             />
           </div>
           <Button type="submit" className="w-full" disabled={name.trim().length < 2 || add.isPending}>

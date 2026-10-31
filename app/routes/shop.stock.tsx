@@ -43,12 +43,14 @@ export default function ShopStock() {
   const value = products.reduce((sum, p) => sum + (p.cost ?? 0) * p.stock, 0);
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-end justify-between gap-3">
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-semibold">Stock</h1>
+          <h1 className="sr-only">Stock</h1>
           <p className="text-sm text-muted-foreground">
-            {products.length} products · {money(value, shop.currency)} on the shelves at cost
+            {products.length} products ·{" "}
+            <span className="tabular font-display text-base font-semibold text-foreground">{money(value, shop.currency)}</span> on the
+            shelves at cost
           </p>
         </div>
         <Button className="gap-1.5" onClick={() => setPanel({ kind: "add" })}>

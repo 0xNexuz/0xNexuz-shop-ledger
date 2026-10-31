@@ -84,6 +84,13 @@ type EntryRow = {
   voidReason: string | null;
 };
 
+/** "Fri, 30 Oct" for a promised YYYY-MM-DD day: easier to read than the ISO date. */
+function promiseDay(day: string): string {
+  return new Intl.DateTimeFormat("en-NG", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" }).format(
+    new Date(`${day}T12:00:00Z`),
+  );
+}
+
 function describe(row: EntryRow, lines: EntryLineView[], customerName: string | null, currency: string): string {
   const money = (k: number) => formatMoney(k, currency);
   const items = lines.map((l) => `${l.qty} × ${l.productName}`).join(", ");
@@ -94,7 +101,7 @@ function describe(row: EntryRow, lines: EntryLineView[], customerName: string | 
       const who = customerName ? ` to ${customerName}` : "";
       const pay =
         credit > 0
-          ? `paid ${money(row.paidKobo)}, ${money(credit)} on credit${row.dueDate ? ` (promised ${row.dueDate})` : ""}`
+          ? `paid ${money(row.paidKobo)}, ${money(credit)} on credit${row.dueDate ? ` (promised ${promiseDay(row.dueDate)})` : ""}`
           : `paid in full${row.method ? ` by ${row.method}` : ""}`;
       text = `Sold ${items}${who} for ${money(row.totalKobo)}, ${pay}`;
       break;
@@ -108,7 +115,7 @@ function describe(row: EntryRow, lines: EntryLineView[], customerName: string | 
     case "adjustment":
       text =
         row.customerId && row.balanceDeltaKobo !== 0
-          ? `Opening balance: ${customerName ?? "Customer"} owes ${money(row.balanceDeltaKobo)}${row.dueDate ? ` (promised ${row.dueDate})` : ""}${row.note ? ` (${row.note})` : ""}`
+          ? `Opening balance: ${customerName ?? "Customer"} owes ${money(row.balanceDeltaKobo)}${row.dueDate ? ` (promised ${promiseDay(row.dueDate)})` : ""}${row.note ? ` (${row.note})` : ""}`
           : `Stock count: ${lines.map((l) => `${l.productName} ${l.qty > 0 ? "+" : ""}${l.qty}`).join(", ")}${row.note ? ` (${row.note})` : ""}`;
       break;
   }

@@ -77,14 +77,9 @@ function useDictation(onText: (text: string) => void) {
   return { supported, listening, start, stop };
 }
 
+// Two shortcuts beside the camera: the rest of Today already shows reminders and low stock.
 const QUICK_ASKS = [
   { label: "How did we do today?", prompt: "How did the shop do today? Give me sales, cash in, credit given and anything I should act on." },
-  {
-    label: "Draft overdue reminders",
-    prompt:
-      "Draft friendly WhatsApp reminders for customers whose promised date has passed. Mention the exact balance and keep each message short and respectful.",
-  },
-  { label: "What's running low?", prompt: "Which products are running low, and how many of each should I restock based on this week's sales?" },
   { label: "Check my books", prompt: "Check that my books balance: stock and every customer's balance against the entries." },
 ];
 
@@ -109,13 +104,13 @@ export function AskBar() {
   }
 
   return (
-    <section aria-labelledby="ask-heading" className="space-y-3">
+    <section aria-labelledby="ask-heading" className="space-y-2.5">
       <form
         onSubmit={submit}
         className="brand-corner flex items-center gap-2 rounded-lg border-2 border-foreground bg-card p-1.5 pl-4 shadow-[4px_4px_0_0_hsl(var(--brand-violet))] focus-within:shadow-[6px_6px_0_0_hsl(var(--brand-violet))] transition-shadow"
       >
         <label id="ask-heading" htmlFor="ask-input" className="sr-only">
-          Tell the shop agent what happened
+          Tell the shop agent what happened, in English, Pidgin, Yoruba, Hausa or Igbo
         </label>
         <input
           id="ask-input"
@@ -143,21 +138,18 @@ export function AskBar() {
           <span className="hidden sm:inline">Record</span>
         </Button>
       </form>
-      <div className="flex flex-wrap items-center gap-2">
-        <SnapNotebookButton />
+      <div className="no-scrollbar -mx-4 flex items-center gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
+        <SnapNotebookButton className="shrink-0 whitespace-nowrap" />
         {QUICK_ASKS.map((ask) => (
           <button
             key={ask.label}
             type="button"
             onClick={() => askAgent(ask.prompt)}
-            className="rounded-full border border-input px-3 py-1 text-xs font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="shrink-0 whitespace-nowrap rounded-full border border-input px-3 py-1 text-xs font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             {ask.label}
           </button>
         ))}
-        <span className="ml-auto hidden items-center gap-1 text-xs text-muted-foreground md:inline-flex">
-          English, Pidgin, Yoruba, Hausa or Igbo all work.
-        </span>
       </div>
     </section>
   );

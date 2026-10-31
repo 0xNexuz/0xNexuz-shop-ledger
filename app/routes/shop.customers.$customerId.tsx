@@ -89,9 +89,9 @@ export default function CustomerAccount() {
         </div>
       </section>
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:gap-8">
         <section aria-labelledby="statement-heading">
-          <h2 id="statement-heading" className="mb-1 font-display text-xl font-semibold">
+          <h2 id="statement-heading" className="mb-1 font-display text-lg font-semibold">
             Statement
           </h2>
           {entries.length ? (
@@ -105,7 +105,7 @@ export default function CustomerAccount() {
           )}
         </section>
 
-        <aside className="space-y-6">
+        <aside className="space-y-5">
           {customer.balance > 0 ? (
             <form
               className="brand-corner space-y-3 rounded-lg border-2 border-foreground p-4"
@@ -130,7 +130,7 @@ export default function CustomerAccount() {
                     placeholder={String(customer.balance)}
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="flex flex-col gap-1.5">
                   <Label htmlFor="pay-method">By</Label>
                   <select
                     id="pay-method"

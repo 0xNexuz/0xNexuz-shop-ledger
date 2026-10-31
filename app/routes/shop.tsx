@@ -72,9 +72,9 @@ export default function ShopLayout() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-3 sm:px-6">
-      <div className="sticky top-0 z-10 -mx-4 mb-5 flex items-center gap-2 border-b border-border bg-background/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6">
-        <nav aria-label="Shop" className="flex min-w-0 flex-1 gap-1 overflow-x-auto">
+    <div className="mx-auto w-full max-w-6xl px-4 pb-16 sm:px-6">
+      <div className="sticky top-0 z-10 -mx-4 mb-4 flex items-center gap-2 border-b border-border bg-background/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6">
+        <nav aria-label="Shop" className="no-scrollbar flex min-w-0 flex-1 gap-1 overflow-x-auto">
           {TABS.map((tab) => (
             <NavLink
               key={tab.to}
