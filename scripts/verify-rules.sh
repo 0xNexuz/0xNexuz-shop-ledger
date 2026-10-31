@@ -42,12 +42,20 @@ expect "credit without a named customer is refused" "Say which customer owes it"
   record-sale --lines '[{"product":"sugar","qty":2}]' --paid 1000
 expect "an unknown product is reported with suggestions" "Did you mean" \
   record-sale --lines '[{"product":"oil OR milk","qty":1}]'
-expect "paying more than owed is refused" "only owes ₦10,000" \
+expect "more credit to a late payer needs the owner's OK" "Credit check: Chinedu already owes ₦28,000 and is 12 days past" \
+  record-sale --lines '[{"product":"garri","qty":2}]' --customer chinedu --paid 0
+expect "…and nothing was written" "now owes ₦28,000|balance: 28000" get-credit-standing --customer chinedu
+expect "…and it goes through once the owner agrees" "now owes ₦33,000" \
+  record-sale --lines '[{"product":"garri","qty":2}]' --customer chinedu --paid 0 --confirmCredit true
+expect "credit sense remembers she cleared ₦160,000 before" "repaidUpTo: 160000" get-credit-standing --customer "mama ngozi"
+
+expect "paying more than owed is refused" "only owes ₦33,000" \
   record-payment --customer chinedu --amount 50000
 expect "a valid payment clears the balance" "now owes ₦0" \
-  record-payment --customer chinedu --amount 10000 --method transfer
+  record-payment --customer chinedu --amount 33000 --method transfer
 
-sale="$(act list-entries --kind sale --limit 1 | id_of)"
+mama="$(act list-customers | grep -B3 -A3 'Mama Ngozi' | id_of)"
+sale="$(act list-entries --kind sale --customerId "$mama" --limit 1 | id_of)"
 expect "voiding restores stock and balance" "now owes ₦86,000" void-entry --id "$sale" --reason "entered twice"
 expect "voiding twice is refused" "already voided" void-entry --id "$sale" --reason again
 
@@ -57,9 +65,14 @@ expect "voiding a restock whose stock was sold is refused" "would go below zero 
   void-entry --id "$restock" --reason test
 
 expect "a stock count posts the difference" "Garri \(paint\) -2" \
-  record-stock-count --product garri --countedQty 18 --reason "2 spoilt by rain"
-expect "an unchanged count is refused" "already 18" \
-  record-stock-count --product garri --countedQty 18 --reason same
+  record-stock-count --product garri --countedQty 16 --reason "2 spoilt by rain"
+expect "an unchanged count is refused" "already 16" \
+  record-stock-count --product garri --countedQty 16 --reason same
+
+import="$(act propose-notebook-import --customers '[{"name":"Baba Sule","owes":8500}]' --products '[]' | id_of)"
+expect "a notebook page waits for the owner's review" "draft" list-imports
+expect "…and only the app UI can add it to the books" "only be called from the signed-in app UI" \
+  apply-notebook-import --id "$import" --customers '[0]'
 
 expect "reminders skip customers who owe nothing" "doesn't owe anything" \
   draft-reminders --drafts '[{"customer":"chinedu","message":"Hello Chinedu, just checking in about your balance."}]'

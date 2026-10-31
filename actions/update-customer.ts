@@ -19,13 +19,17 @@ const errors = defineActionErrors(
 );
 
 export default defineAction({
-  description: "Change a customer's name, phone or note. Balances change only through sales, payments and voids.",
+  description: "Change a customer's name, phone, note or credit limit. Balances change only through sales, payments and voids.",
   schema: z.object({
     shopId: shopIdArg,
     id: z.string().min(1).describe("Customer id (or their name)"),
     name: z.string().min(2).max(80).optional().describe("New name"),
     phone: z.string().max(20).optional().describe('New phone number; "" clears it'),
     note: z.string().max(280).optional().describe('New note; "" clears it'),
+    creditLimit: z
+      .union([z.coerce.number().nonnegative(), z.null()])
+      .optional()
+      .describe("Owner-set credit limit in naira; null goes back to the suggested limit"),
   }),
   outputSchema: debtorOut,
   errors,
@@ -34,7 +38,12 @@ export default defineAction({
     const shop = await requireShop(args.shopId, "write");
     const resolved = resolveCustomer(await loadCustomers(shop.id), args.id, false);
     if (!("existing" in resolved)) throw new Error("unreachable");
-    await updateCustomer(shop, resolved.existing.id, { name: args.name, phone: args.phone, note: args.note });
+    await updateCustomer(shop, resolved.existing.id, {
+      name: args.name,
+      phone: args.phone,
+      note: args.note,
+      creditLimit: args.creditLimit,
+    });
     const [row] = await listAccounts(shop, {
       owingOnly: false,
       limit: 1,

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Link } from "react-router";
 import { toast } from "sonner";
 
+import { CreditChip, useCreditStatuses } from "@/components/shop/CreditStanding";
 import { dayLabel, money } from "@/components/shop/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +21,7 @@ export default function ShopCustomers() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const query = useActionQuery("list-customers", owingOnly ? { owingOnly: true } : {});
+  const credit = useCreditStatuses();
   const add = useActionMutation("create-customer", {
     onSuccess: (customer) => {
       toast.success(`${customer.name} added.`);
@@ -80,7 +82,10 @@ export default function ShopCustomers() {
                     {c.name.replace(/[^\p{L}\s]/gu, "").split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase()}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate font-medium">{c.name}</span>
+                    <span className="flex items-center gap-2">
+                      <span className="truncate font-medium">{c.name}</span>
+                      {credit.get(c.id) && credit.get(c.id) !== "good" ? <CreditChip status={credit.get(c.id)!} /> : null}
+                    </span>
                     <span className={cn("text-xs", c.daysOverdue ? "font-medium text-destructive" : "text-muted-foreground")}>
                       {c.balance <= 0
                         ? "All paid up"

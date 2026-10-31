@@ -113,6 +113,27 @@ CREATE INDEX IF NOT EXISTS entry_lines_product_idx ON entry_lines (product_id);
 CREATE INDEX IF NOT EXISTS reminders_shop_status_idx ON reminders (shop_id, status);
 CREATE UNIQUE INDEX IF NOT EXISTS reminders_one_open_per_customer_uq ON reminders (customer_id) WHERE status IN ('draft', 'approved')`,
     },
+    {
+      version: 2,
+      name: "shop-ledger-notebook-aliases-credit",
+      sql: `CREATE TABLE IF NOT EXISTS imports (
+  id TEXT PRIMARY KEY,
+  shop_id TEXT NOT NULL REFERENCES shops(id),
+  source TEXT NOT NULL DEFAULT 'notebook photo',
+  status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'applied', 'dismissed')),
+  payload TEXT NOT NULL,
+  note TEXT,
+  drafted_by TEXT NOT NULL DEFAULT 'agent',
+  created_at TEXT NOT NULL DEFAULT (now()),
+  applied_at TEXT,
+  owner_email TEXT NOT NULL,
+  org_id TEXT
+);
+CREATE INDEX IF NOT EXISTS imports_shop_status_idx ON imports (shop_id, status);
+ALTER TABLE customers ADD COLUMN IF NOT EXISTS aliases TEXT NOT NULL DEFAULT '[]';
+ALTER TABLE products ADD COLUMN IF NOT EXISTS aliases TEXT NOT NULL DEFAULT '[]';
+ALTER TABLE customers ADD COLUMN IF NOT EXISTS credit_limit_kobo BIGINT CHECK (credit_limit_kobo IS NULL OR credit_limit_kobo >= 0)`,
+    },
   ],
   { table: "shop_ledger_migrations" },
 );

@@ -1,15 +1,81 @@
-import { IconMicrophone, IconSend2 } from "@tabler/icons-react";
-import { useState } from "react";
+import { IconMicrophone, IconPlayerStopFilled, IconSend2 } from "@tabler/icons-react";
+import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 
 import { askAgent } from "./format";
+import { SnapNotebookButton } from "./NotebookImport";
 
+/** Say it the way you'd say it: English, Pidgin, Yoruba, Hausa or Igbo. */
 const EXAMPLES = [
   "Sold 2 bags of rice to Mama Ngozi, she paid 50k, rest next Friday",
-  "Iya Bisi paid 10k by transfer",
+  "I sell 2 bag rice give Mama Ngozi, she pay 50k, remain go Friday",
+  "Mo ta paali Indomie meji fun Iya Bisi, o san 10k",
+  "Na sayar da buhun shinkafa daya ga Chinedu, bashi ne",
+  "Mama Ngozi kwụrụ ụgwọ 20k taa",
   "5 cartons of Indomie came in at 9,200 each",
 ];
+
+type Recognition = {
+  lang: string;
+  interimResults: boolean;
+  continuous: boolean;
+  onresult: ((event: { resultIndex: number; results: ArrayLike<ArrayLike<{ transcript: string }> & { isFinal: boolean }> }) => void) | null;
+  onerror: ((event: { error: string }) => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+};
+
+function speechRecognition(): (new () => Recognition) | null {
+  if (typeof window === "undefined") return null;
+  const w = window as unknown as { SpeechRecognition?: new () => Recognition; webkitSpeechRecognition?: new () => Recognition };
+  return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
+}
+
+/**
+ * Talk instead of typing: the phone's own speech recognition (Nigerian
+ * English, which copes with Pidgin) fills the box, and the owner checks it
+ * before pressing Record. Hidden where the browser has no speech support.
+ */
+function useDictation(onText: (text: string) => void) {
+  const [supported, setSupported] = useState(false);
+  const [listening, setListening] = useState(false);
+  const recognition = useRef<Recognition | null>(null);
+  useEffect(() => setSupported(!!speechRecognition()), []);
+
+  function start() {
+    const Ctor = speechRecognition();
+    if (!Ctor) return;
+    const rec = new Ctor();
+    rec.lang = "en-NG";
+    rec.interimResults = true;
+    rec.continuous = false;
+    let finalText = "";
+    rec.onresult = (event) => {
+      let interim = "";
+      for (let i = event.resultIndex; i < event.results.length; i += 1) {
+        const result = event.results[i];
+        const text = result?.[0]?.transcript ?? "";
+        if (result?.isFinal) finalText += text;
+        else interim += text;
+      }
+      onText(`${finalText}${interim}`.trim());
+    };
+    rec.onerror = () => setListening(false);
+    rec.onend = () => setListening(false);
+    recognition.current = rec;
+    setListening(true);
+    rec.start();
+  }
+
+  function stop() {
+    recognition.current?.stop();
+    setListening(false);
+  }
+
+  return { supported, listening, start, stop };
+}
 
 const QUICK_ASKS = [
   { label: "How did we do today?", prompt: "How did the shop do today? Give me sales, cash in, credit given and anything I should act on." },
@@ -25,7 +91,14 @@ const QUICK_ASKS = [
 /** The shop's front door: say what happened in plain words and the agent records it. */
 export function AskBar() {
   const [text, setText] = useState("");
-  const [example] = useState(() => EXAMPLES[Math.floor(Math.random() * EXAMPLES.length)] ?? EXAMPLES[0]);
+  const [exampleIndex, setExampleIndex] = useState(0);
+  const example = EXAMPLES[exampleIndex] ?? EXAMPLES[0];
+  const dictation = useDictation(setText);
+  // Rotate the hint so owners see they can write in their own language.
+  useEffect(() => {
+    const timer = window.setInterval(() => setExampleIndex((i) => (i + 1) % EXAMPLES.length), 4000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -48,16 +121,30 @@ export function AskBar() {
           id="ask-input"
           value={text}
           onChange={(event) => setText(event.target.value)}
-          placeholder={`e.g. "${example}"`}
+          placeholder={dictation.listening ? "Listening… say what happened" : `e.g. "${example}"`}
           autoComplete="off"
           className="min-w-0 flex-1 bg-transparent py-2 text-[15px] outline-none placeholder:text-muted-foreground"
         />
+        {dictation.supported ? (
+          <Button
+            type="button"
+            variant={dictation.listening ? "destructive" : "ghost"}
+            size="icon"
+            aria-label={dictation.listening ? "Stop listening" : "Say it instead of typing"}
+            aria-pressed={dictation.listening}
+            onClick={() => (dictation.listening ? dictation.stop() : dictation.start())}
+            className="shrink-0 rounded-md"
+          >
+            {dictation.listening ? <IconPlayerStopFilled className="size-4" /> : <IconMicrophone className="size-4" />}
+          </Button>
+        ) : null}
         <Button type="submit" disabled={!text.trim()} className="gap-1.5 rounded-md">
           <IconSend2 className="size-4" />
           <span className="hidden sm:inline">Record</span>
         </Button>
       </form>
       <div className="flex flex-wrap items-center gap-2">
+        <SnapNotebookButton />
         {QUICK_ASKS.map((ask) => (
           <button
             key={ask.label}
@@ -69,7 +156,7 @@ export function AskBar() {
           </button>
         ))}
         <span className="ml-auto hidden items-center gap-1 text-xs text-muted-foreground md:inline-flex">
-          <IconMicrophone className="size-3.5" /> Prefer talking? Use the mic in the agent panel.
+          English, Pidgin, Yoruba, Hausa or Igbo all work.
         </span>
       </div>
     </section>

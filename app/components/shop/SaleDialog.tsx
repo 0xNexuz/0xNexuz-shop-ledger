@@ -1,5 +1,5 @@
 import { actionErrorMessage, useActionMutation, useActionQuery } from "@agent-native/core/client/hooks";
-import { IconPlus, IconTrash } from "@tabler/icons-react";
+import { IconAlertTriangle, IconPlus, IconTrash } from "@tabler/icons-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -15,7 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-import { money } from "./format";
+import { errorCodeOf, money } from "./format";
 
 interface Line {
   key: number;
@@ -35,6 +35,8 @@ export function SaleDialog({ open, onOpenChange, currency }: { open: boolean; on
   const [paid, setPaid] = useState("");
   const [method, setMethod] = useState<"cash" | "transfer" | "pos">("cash");
   const [dueDate, setDueDate] = useState("");
+  // Credit sense: the server's warning before more credit goes to a late payer.
+  const [creditWarning, setCreditWarning] = useState<string | null>(null);
 
   const catalog = products.data?.products ?? [];
   const total = useMemo(
@@ -54,6 +56,7 @@ export function SaleDialog({ open, onOpenChange, currency }: { open: boolean; on
     setPaid("");
     setMethod("cash");
     setDueDate("");
+    setCreditWarning(null);
   };
 
   const sale = useActionMutation("record-sale", {
@@ -62,21 +65,34 @@ export function SaleDialog({ open, onOpenChange, currency }: { open: boolean; on
       reset();
       onOpenChange(false);
     },
-    onError: (error) => toast.error(actionErrorMessage(error) ?? "Couldn't record the sale."),
+    onError: (error) => {
+      const message = actionErrorMessage(error) ?? "Couldn't record the sale.";
+      if (errorCodeOf(error) === "credit_check") {
+        setCreditWarning(message.replace(/^Credit check:\s*/, "").replace(/\s*Ask the owner.*$/, "").replace(/\.$/, ""));
+        return;
+      }
+      toast.error(message);
+    },
   });
 
   const ready = lines.every((l) => l.productId && Number(l.qty) > 0) && (onCredit === 0 || customer.trim().length >= 2);
 
-  function submit(event: React.FormEvent) {
-    event.preventDefault();
-    if (!ready) return;
+  function send(confirmCredit: boolean) {
     sale.mutate({
       lines: lines.map((l) => ({ product: l.productId, qty: Number(l.qty) })),
       method,
       ...(customer.trim() ? { customer: customer.trim() } : {}),
       ...(paid.trim() !== "" ? { paid: Number(paid) } : {}),
       ...(onCredit > 0 && dueDate ? { dueDate } : {}),
+      ...(confirmCredit ? { confirmCredit: true } : {}),
     });
+  }
+
+  function submit(event: React.FormEvent) {
+    event.preventDefault();
+    if (!ready) return;
+    setCreditWarning(null);
+    send(false);
   }
 
   return (
@@ -206,6 +222,26 @@ export function SaleDialog({ open, onOpenChange, currency }: { open: boolean; on
             </span>
             <span className="tabular font-display text-xl font-bold">{money(total, currency)}</span>
           </div>
+
+          {creditWarning ? (
+            <div role="alert" className="flex gap-3 rounded-lg border-2 border-warning bg-warning/10 p-3 text-sm">
+              <IconAlertTriangle className="mt-0.5 size-5 shrink-0 text-warning" aria-hidden />
+              <div className="space-y-2">
+                <p>
+                  <span className="font-semibold">Before you give more credit: </span>
+                  {creditWarning}.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Button type="button" size="sm" variant="outline" disabled={sale.isPending} onClick={() => send(true)}>
+                    Give credit anyway
+                  </Button>
+                  <Button type="button" size="sm" variant="ghost" onClick={() => setCreditWarning(null)}>
+                    Change the sale
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : null}
 
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>

@@ -62,6 +62,8 @@ function amountText(entry: Entry, currency: string): { text: string; tone: strin
     case "restock":
       return { text: entry.total ? money(entry.total, currency) : "—", tone: "text-muted-foreground" };
     case "adjustment":
+      // An opening balance (from the notebook) carries money, not stock.
+      if (entry.balanceChange !== 0) return { text: money(entry.balanceChange, currency), tone: "text-warning" };
       return {
         text: entry.lines.map((l) => `${l.qty > 0 ? "+" : ""}${l.qty}`).join(", "),
         tone: "text-muted-foreground",
@@ -88,7 +90,7 @@ export function EntryLine({ entry, currency, timeZone, showDate }: { entry: Entr
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline gap-2">
           <span className={cn("text-[11px] font-semibold uppercase tracking-wide text-muted-foreground", voided && "line-through")}>
-            {KIND_LABEL[entry.kind]}
+            {entry.kind === "adjustment" && entry.balanceChange !== 0 ? "Opening" : KIND_LABEL[entry.kind]}
           </span>
           <span className="ledger-leader" aria-hidden />
           <span className={cn("tabular font-display text-[15px] font-semibold", amount.tone, voided && "line-through opacity-60")}>

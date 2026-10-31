@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Link, useParams } from "react-router";
 import { toast } from "sonner";
 
+import { CreditStandingCard } from "@/components/shop/CreditStanding";
 import { EntryLine } from "@/components/shop/EntryLine";
 import { ReminderCard } from "@/components/shop/ReminderCard";
 import { askAgent, dayLabel, money } from "@/components/shop/format";
@@ -147,6 +148,8 @@ export default function CustomerAccount() {
               </Button>
             </form>
           ) : null}
+
+          <CreditStandingCard customerId={customer.id} currency={currency} />
 
           <section aria-labelledby="customer-reminders" className="space-y-3">
             <div className="flex items-center justify-between gap-2">

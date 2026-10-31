@@ -11,6 +11,7 @@ import {
   writeResult,
   writeResultOut,
 } from "../server/lib/contracts.js";
+import { assertCreditOk } from "../server/lib/credit.js";
 import { postSale } from "../server/lib/ledger.js";
 import { requireActor, requireShop } from "../server/lib/shop.js";
 
@@ -26,12 +27,13 @@ const errors = defineActionErrors(
   "invalid_quantity",
   "invalid_due_date",
   "invalid_time",
+  "credit_check",
   "no_shop",
 );
 
 export default defineAction({
   description:
-    "Record a sale: what was sold, to whom, and how much was paid now. Any unpaid remainder goes on the customer's credit. Rejects with insufficient_stock (409) when stock would go below zero, credit_needs_customer when part is unpaid and no customer is named, and unknown_product/ambiguous_product when a product name doesn't resolve: report these to the user, don't guess.",
+    "Record a sale: what was sold, to whom, and how much was paid now. Any unpaid remainder goes on the customer's credit. Rejects with credit_check (409) when more credit would go to someone well past their promised date or over their limit: tell the owner the reason in one line and ask; only if they agree, call again with confirmCredit: true. Rejects with insufficient_stock (409) when stock would go below zero, credit_needs_customer when part is unpaid and no customer is named, and unknown_product/ambiguous_product when a product name doesn't resolve: report these to the user, don't guess.",
   schema: z.object({
     shopId: shopIdArg,
     lines: z
@@ -63,6 +65,7 @@ export default defineAction({
     dueDate: dayArg.optional().describe("Day the customer promised to pay the rest, YYYY-MM-DD (only when something is unpaid)"),
     note: z.string().max(280).optional().describe("Short free-text note"),
     occurredAt: occurredAtArg,
+    confirmCredit: flagArg("Only after the owner has seen a credit_check warning and said to go ahead"),
   }),
   outputSchema: writeResultOut,
   errors,
@@ -78,6 +81,9 @@ export default defineAction({
       dueDate: args.dueDate,
       note: args.note,
       occurredAt: args.occurredAt,
+      creditCheck: flag(args.confirmCredit, false)
+        ? undefined
+        : (customerId, creditKobo) => assertCreditOk(shop, customerId, creditKobo),
     });
     return writeResult(shop, id);
   },

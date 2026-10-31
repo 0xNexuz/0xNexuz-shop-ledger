@@ -105,7 +105,10 @@ function describe(row: EntryRow, lines: EntryLineView[], customerName: string | 
       text = `Restocked ${items}${row.totalKobo ? ` for ${money(row.totalKobo)}` : ""}`;
       break;
     case "adjustment":
-      text = `Stock count: ${lines.map((l) => `${l.productName} ${l.qty > 0 ? "+" : ""}${l.qty}`).join(", ")}${row.note ? ` (${row.note})` : ""}`;
+      text =
+        row.customerId && row.balanceDeltaKobo !== 0
+          ? `Opening balance: ${customerName ?? "Customer"} owes ${money(row.balanceDeltaKobo)}${row.dueDate ? ` (promised ${row.dueDate})` : ""}${row.note ? ` (${row.note})` : ""}`
+          : `Stock count: ${lines.map((l) => `${l.productName} ${l.qty > 0 ? "+" : ""}${l.qty}`).join(", ")}${row.note ? ` (${row.note})` : ""}`;
       break;
   }
   return row.status === "voided" ? `[VOIDED: ${row.voidReason ?? "no reason"}] ${text}` : text;
@@ -273,6 +276,8 @@ export interface SaleInput {
   dueDate?: string | undefined;
   note?: string | undefined;
   occurredAt?: string | undefined;
+  /** Runs before more credit goes to an existing customer; throws to stop the sale. */
+  creditCheck?: ((customerId: string, creditKobo: number) => Promise<void>) | undefined;
 }
 
 export async function postSale(shop: ShopRef, actor: Actor, input: SaleInput): Promise<string> {
@@ -300,6 +305,9 @@ export async function postSale(shop: ShopRef, actor: Actor, input: SaleInput): P
   if (!plan.ok) throw new NoWriteError(plan.message, { errorCode: plan.code, statusCode: 400 });
   if (plan.creditKobo === 0 && input.dueDate) {
     throw new NoWriteError("dueDate only applies when something is left unpaid.", { errorCode: "invalid_due_date", statusCode: 400 });
+  }
+  if (plan.creditKobo > 0 && customer && "existing" in customer && input.creditCheck) {
+    await input.creditCheck(customer.existing.id, plan.creditKobo);
   }
   const at = occurredAt(input.occurredAt);
   const entryId = crypto.randomUUID();
@@ -458,6 +466,37 @@ export async function postOpeningStock(
   await tx.insert(entryLines).values(lineRow(shop, actor, entryId, product.id, product.name, qty, product.costKobo ?? 0));
 }
 
+/**
+ * Bring an existing debt into the books (e.g. from the owner's notebook) as an
+ * adjustment, so reconcile and void treat it like any other balance change.
+ */
+export async function postOpeningBalance(
+  tx: Tx,
+  shop: ShopRef,
+  actor: Actor,
+  customerId: string,
+  amountKobo: number,
+  options: { dueDate?: string | null | undefined; note?: string | undefined; at?: string | undefined } = {},
+): Promise<string> {
+  const at = options.at ?? new Date().toISOString();
+  const entryId = crypto.randomUUID();
+  await tx.insert(entries).values({
+    id: entryId,
+    shopId: shop.id,
+    kind: "adjustment",
+    customerId,
+    balanceDeltaKobo: amountKobo,
+    dueDate: options.dueDate ?? null,
+    note: options.note ?? "Opening balance",
+    source: actor.source,
+    occurredAt: at,
+    ownerEmail: actor.email,
+    orgId: shop.orgId,
+  });
+  await applyBalance(tx, shop.id, customerId, amountKobo, at);
+  return entryId;
+}
+
 /** Set stock to a physical count; the difference is posted as an adjustment. */
 export async function postStockCount(
   shop: ShopRef,
@@ -586,7 +625,14 @@ export async function listAccounts(
   const promises = await getDb()
     .select({ customerId: entries.customerId, dueDate: sql<string | null>`max(${entries.dueDate})` })
     .from(entries)
-    .where(and(inArray(entries.customerId, ids), eq(entries.kind, "sale"), eq(entries.status, "posted"), gt(entries.balanceDeltaKobo, 0)))
+    .where(
+      and(
+        inArray(entries.customerId, ids),
+        inArray(entries.kind, ["sale", "adjustment"]),
+        eq(entries.status, "posted"),
+        gt(entries.balanceDeltaKobo, 0),
+      ),
+    )
     .groupBy(entries.customerId);
   const open = await getDb()
     .select({ customerId: reminders.customerId, status: reminders.status })

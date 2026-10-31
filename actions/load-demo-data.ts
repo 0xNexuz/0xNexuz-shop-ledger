@@ -1,10 +1,11 @@
 import { NoWriteError, defineAction, defineActionErrors } from "@agent-native/core/action";
 import { accessFilter } from "@agent-native/core/sharing";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { getDb, schema } from "../server/db/index.js";
 import { createCustomer, createProduct, createShop, shopHasActivity } from "../server/lib/catalog.js";
-import { postPayment, postRestock, postSale } from "../server/lib/ledger.js";
+import { postOpeningBalance, postPayment, postRestock, postSale } from "../server/lib/ledger.js";
 import { requireActor, requireShop } from "../server/lib/shop.js";
 import { dayBoundsUtc, localDay } from "../server/lib/time.js";
 
@@ -72,6 +73,35 @@ export default defineAction({
       await postSale(shop, actor, input);
       entries += 1;
     };
+    // Earlier history, carried over from the paper notebook, so credit sense has
+    // something to go on: Mama Ngozi ran up ₦160,000 last month and cleared it;
+    // Chinedu still owes from a promise that passed 12 days ago.
+    const customerId = async (name: string) => {
+      const [row] = await getDb()
+        .select({ id: schema.customers.id })
+        .from(schema.customers)
+        .where(and(eq(schema.customers.shopId, shop.id), eq(schema.customers.name, name)))
+        .limit(1);
+      if (!row) throw new Error(`Sample customer ${name} missing`);
+      return row.id;
+    };
+    const mamaNgozi = await customerId("Mama Ngozi");
+    const chinedu = await customerId("Chinedu");
+    await getDb().transaction(async (tx) => {
+      await postOpeningBalance(tx, shop, actor, mamaNgozi, 16_000_000, {
+        note: "Brought forward from the old notebook",
+        at: dayIso(30, 10),
+      });
+      await postOpeningBalance(tx, shop, actor, chinedu, 1_800_000, {
+        dueDate: dayOnly(-12),
+        note: "Brought forward from the old notebook",
+        at: dayIso(19, 10),
+      });
+    });
+    entries += 2;
+    await postPayment(shop, actor, { customer: "Mama Ngozi", amount: 100000, method: "transfer", occurredAt: dayIso(22, 12) });
+    await postPayment(shop, actor, { customer: "Mama Ngozi", amount: 60000, method: "cash", occurredAt: dayIso(16, 16) });
+    entries += 2;
     await sale({
       customer: "Mr Tunde (tailor)",
       createCustomerIfMissing: false,

@@ -5,6 +5,7 @@ import { Link } from "react-router";
 import { EmptyState } from "@/components/brand/LineArt";
 import { AskBar } from "@/components/shop/AskBar";
 import { EntryLine } from "@/components/shop/EntryLine";
+import { NotebookImports, SnapNotebookButton } from "@/components/shop/NotebookImport";
 import { ReminderCard } from "@/components/shop/ReminderCard";
 import { askAgent, dayLabel, money } from "@/components/shop/format";
 import { Button } from "@/components/ui/button";
@@ -74,6 +75,8 @@ export default function ShopToday() {
         </div>
       </section>
 
+      <NotebookImports currency={currency} />
+
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
         <section aria-labelledby="daybook-heading">
           <div className="mb-1 flex items-center justify-between">
@@ -91,7 +94,10 @@ export default function ShopToday() {
               ))}
             </ul>
           ) : (
-            <EmptyState art="book">Nothing recorded yet. Tell the agent your first sale above.</EmptyState>
+            <EmptyState art="book" action={<SnapNotebookButton label="Snap your old notebook" />}>
+              Nothing recorded yet. Tell the agent your first sale above, or bring in what&apos;s already in your paper
+              notebook.
+            </EmptyState>
           )}
         </section>
 

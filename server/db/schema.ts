@@ -31,6 +31,8 @@ export const products = pgTable("products", {
   stockQty: integer("stock_qty").notNull().default(0),
   lowStockAt: integer("low_stock_at").notNull().default(5),
   archived: boolean("archived").notNull().default(false),
+  /** JSON array of other names the shop uses for it ("one bag" → Rice 50kg). */
+  aliases: text("aliases").notNull().default("[]"),
   ownerEmail: text("owner_email").notNull(),
   orgId: text("org_id"),
   createdAt: text("created_at").notNull().default(sql`now()`),
@@ -45,6 +47,10 @@ export const customers = pgTable("customers", {
   note: text("note"),
   balanceKobo: bigint("balance_kobo", { mode: "number" }).notNull().default(0),
   lastActivityAt: text("last_activity_at"),
+  /** JSON array of nicknames ("Mama N"). */
+  aliases: text("aliases").notNull().default("[]"),
+  /** Owner-set credit limit; null means use the suggested one. */
+  creditLimitKobo: bigint("credit_limit_kobo", { mode: "number" }),
   ownerEmail: text("owner_email").notNull(),
   orgId: text("org_id"),
   createdAt: text("created_at").notNull().default(sql`now()`),
@@ -104,6 +110,25 @@ export const reminders = pgTable("reminders", {
   sentAt: text("sent_at"),
   createdAt: text("created_at").notNull().default(sql`now()`),
   updatedAt: text("updated_at").notNull().default(sql`now()`),
+  ownerEmail: text("owner_email").notNull(),
+  orgId: text("org_id"),
+});
+
+/**
+ * A proposed import from the owner's paper notebook (read from a photo by the
+ * agent). Nothing reaches the books until the owner applies it in the UI.
+ */
+export const imports = pgTable("imports", {
+  id: text("id").primaryKey(),
+  shopId: text("shop_id").notNull(),
+  source: text("source").notNull().default("notebook photo"),
+  status: text("status", { enum: ["draft", "applied", "dismissed"] }).notNull().default("draft"),
+  /** JSON: { customers: [...], products: [...] } */
+  payload: text("payload").notNull(),
+  note: text("note"),
+  draftedBy: text("drafted_by").notNull().default("agent"),
+  createdAt: text("created_at").notNull().default(sql`now()`),
+  appliedAt: text("applied_at"),
   ownerEmail: text("owner_email").notNull(),
   orgId: text("org_id"),
 });

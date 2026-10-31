@@ -140,7 +140,12 @@ export async function createCustomer(
 export async function updateCustomer(
   shop: ShopRef,
   customerId: string,
-  patch: { name?: string | undefined; phone?: string | undefined; note?: string | undefined },
+  patch: {
+    name?: string | undefined;
+    phone?: string | undefined;
+    note?: string | undefined;
+    creditLimit?: number | null | undefined;
+  },
 ): Promise<void> {
   const set: Partial<typeof customers.$inferInsert> = {};
   if (patch.name !== undefined) {
@@ -154,6 +159,7 @@ export async function updateCustomer(
   const phone = cleanPhone(patch.phone);
   if (phone !== undefined) set.phone = phone;
   if (patch.note !== undefined) set.note = patch.note.trim() || null;
+  if (patch.creditLimit !== undefined) set.creditLimitKobo = patch.creditLimit === null ? null : kobo(patch.creditLimit, "creditLimit");
   if (!Object.keys(set).length) throw new NoWriteError("Nothing to change.", { errorCode: "no_change", statusCode: 400 });
   const [row] = await getDb()
     .update(customers)
