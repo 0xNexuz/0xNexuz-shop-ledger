@@ -124,11 +124,23 @@ export interface ProductRow {
   stockQty: number;
   lowStockAt: number;
   archived: boolean;
+  aliases: string[];
+}
+
+/** aliases is a JSON array in a TEXT column; anything unreadable counts as none. */
+export function parseAliases(raw: string | null | undefined): string[] {
+  if (!raw) return [];
+  try {
+    const value: unknown = JSON.parse(raw);
+    return Array.isArray(value) ? value.filter((v): v is string => typeof v === "string") : [];
+  } catch {
+    return [];
+  }
 }
 
 export async function loadProducts(shopId: string, includeArchived = false): Promise<ProductRow[]> {
   const p = schema.products;
-  return getDb()
+  const rows = await getDb()
     .select({
       id: p.id,
       name: p.name,
@@ -138,11 +150,13 @@ export async function loadProducts(shopId: string, includeArchived = false): Pro
       stockQty: p.stockQty,
       lowStockAt: p.lowStockAt,
       archived: p.archived,
+      aliases: p.aliases,
     })
     .from(p)
     .where(and(eq(p.shopId, shopId), includeArchived ? undefined : eq(p.archived, false)))
     .orderBy(asc(p.name))
     .limit(1000);
+  return rows.map((row) => ({ ...row, aliases: parseAliases(row.aliases) }));
 }
 
 export function resolveProduct(products: ProductRow[], ref: string): ProductRow {
@@ -169,16 +183,18 @@ export interface CustomerRow {
   name: string;
   phone: string | null;
   balanceKobo: number;
+  aliases: string[];
 }
 
 export async function loadCustomers(shopId: string): Promise<CustomerRow[]> {
   const c = schema.customers;
-  return getDb()
-    .select({ id: c.id, name: c.name, phone: c.phone, balanceKobo: c.balanceKobo })
+  const rows = await getDb()
+    .select({ id: c.id, name: c.name, phone: c.phone, balanceKobo: c.balanceKobo, aliases: c.aliases })
     .from(c)
     .where(eq(c.shopId, shopId))
     .orderBy(asc(c.name))
     .limit(2000);
+  return rows.map((row) => ({ ...row, aliases: parseAliases(row.aliases) }));
 }
 
 export type CustomerResolution = { existing: CustomerRow } | { create: string };

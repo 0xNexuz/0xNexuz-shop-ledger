@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { CreditStandingCard } from "@/components/shop/CreditStanding";
 import { EntryLine } from "@/components/shop/EntryLine";
+import { Nicknames } from "@/components/shop/Nicknames";
 import { ReminderCard } from "@/components/shop/ReminderCard";
 import { askAgent, dayLabel, money } from "@/components/shop/format";
 import { Button } from "@/components/ui/button";
@@ -180,6 +181,8 @@ export default function CustomerAccount() {
               </p>
             ) : null}
           </section>
+
+          <Nicknames kind="customer" id={customer.id} name={customer.name} aliases={customer.aliases} />
 
           <form
             className="space-y-1.5"

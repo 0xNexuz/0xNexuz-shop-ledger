@@ -5,6 +5,7 @@ import { Link } from "react-router";
 import { EmptyState } from "@/components/brand/LineArt";
 import { AskBar } from "@/components/shop/AskBar";
 import { EntryLine } from "@/components/shop/EntryLine";
+import { EveningClose } from "@/components/shop/EveningClose";
 import { NotebookImports, SnapNotebookButton } from "@/components/shop/NotebookImport";
 import { ReminderCard } from "@/components/shop/ReminderCard";
 import { askAgent, dayLabel, money } from "@/components/shop/format";
@@ -13,9 +14,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 import { useShop } from "./shop";
-
-const NIGHTLY_REMINDERS_PROMPT =
-  "Set up a scheduled automation that runs every day at 18:00 UTC (7pm in Lagos). Each run: list customers who owe, and for each one whose promised date has passed and who has no open reminder, use draft-reminders to save a short, respectful WhatsApp message with their exact balance. Only draft: never approve or send. Confirm the schedule back to me.";
 
 export default function ShopToday() {
   const { shop } = useShop();
@@ -102,6 +100,8 @@ export default function ShopToday() {
         </section>
 
         <aside className="space-y-8">
+          <EveningClose currency={currency} />
+
           <section aria-labelledby="reminders-heading">
             <div className="mb-2 flex items-center justify-between gap-2">
               <h2 id="reminders-heading" className="font-display text-xl font-semibold">
@@ -131,13 +131,6 @@ export default function ShopToday() {
                 No reminders waiting. The agent drafts them; you approve and send from WhatsApp.
               </EmptyState>
             )}
-            <button
-              type="button"
-              onClick={() => askAgent(NIGHTLY_REMINDERS_PROMPT)}
-              className="mt-3 text-sm font-medium text-brand-blue hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              Draft these for me every evening
-            </button>
           </section>
 
           <section aria-labelledby="debtors-heading">

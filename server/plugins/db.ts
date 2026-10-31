@@ -134,6 +134,22 @@ ALTER TABLE customers ADD COLUMN IF NOT EXISTS aliases TEXT NOT NULL DEFAULT '[]
 ALTER TABLE products ADD COLUMN IF NOT EXISTS aliases TEXT NOT NULL DEFAULT '[]';
 ALTER TABLE customers ADD COLUMN IF NOT EXISTS credit_limit_kobo BIGINT CHECK (credit_limit_kobo IS NULL OR credit_limit_kobo >= 0)`,
     },
+    {
+      version: 3,
+      name: "shop-ledger-daily-close",
+      sql: `CREATE TABLE IF NOT EXISTS daily_closes (
+  id TEXT PRIMARY KEY,
+  shop_id TEXT NOT NULL REFERENCES shops(id),
+  day TEXT NOT NULL,
+  summary TEXT NOT NULL,
+  reminders_drafted INTEGER NOT NULL DEFAULT 0,
+  closed_by TEXT NOT NULL DEFAULT 'ui',
+  created_at TEXT NOT NULL DEFAULT (now()),
+  owner_email TEXT NOT NULL,
+  org_id TEXT
+);
+CREATE UNIQUE INDEX IF NOT EXISTS daily_closes_shop_day_uq ON daily_closes (shop_id, day)`,
+    },
   ],
   { table: "shop_ledger_migrations" },
 );

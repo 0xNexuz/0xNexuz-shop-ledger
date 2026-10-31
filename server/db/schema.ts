@@ -132,3 +132,17 @@ export const imports = pgTable("imports", {
   ownerEmail: text("owner_email").notNull(),
   orgId: text("org_id"),
 });
+
+/** The evening close: one summary per shop per day (Lagos day), plus the reminders it drafted. */
+export const dailyCloses = pgTable("daily_closes", {
+  id: text("id").primaryKey(),
+  shopId: text("shop_id").notNull(),
+  day: text("day").notNull(),
+  /** JSON summary, see server/lib/close.ts */
+  summary: text("summary").notNull(),
+  remindersDrafted: integer("reminders_drafted").notNull().default(0),
+  closedBy: text("closed_by").notNull().default("ui"),
+  createdAt: text("created_at").notNull().default(sql`now()`),
+  ownerEmail: text("owner_email").notNull(),
+  orgId: text("org_id"),
+});

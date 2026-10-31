@@ -49,16 +49,16 @@ Keep this file concise and evidence-based. Update current state in place, append
 
 ## Development Progress
 
-- **Approved implementation scope:** P0 build of Shop Ledger + hosting on GitHub/Vercel/Neon Postgres (approved 2026-10-31; Supabase is not used)
-- **Completed features:** schema/migrations; 22 actions; rules; reminders state machine; Today/Ledger/Customers/Stock screens; sale dialog; onboarding + sample shop; agent prompt, tools, navigation state; UI-only approval; verify script; brand refresh on branch `brand-refresh` (original logo + animated lockup, sidebar mark, favicon/icons, branded sign-in, hero scene, empty-state drawings, preloader) — not merged or pushed yet
-- **Implemented but unverified:** agent turning sentences into entries; evening automation button (both need an AI key)
-- **Pending features:** deploy; Clips demo; optional Telegram entry via Dispatch; CSV export
+- **Approved implementation scope:** P0 build of Shop Ledger + hosting on GitHub/Vercel/Neon Postgres (approved 2026-10-31; Supabase is not used); four agent features chosen by the owner 2026-10-31: snap the notebook, talk like you talk, credit sense, evening close + nicknames
+- **Completed features:** schema/migrations (v1–v3); 35 actions; ledger rules; reminders state machine; Today/Ledger/Customers/Stock screens; sale dialog with credit warning; onboarding + sample shop; agent prompt, tools, navigation state; UI-only approval; brand refresh (logo, preloader, sign-in); one-tap demo + welcome card; notebook photo import (owner applies); voice/dictation + local-language prompt; credit sense (status, limits, credit_check on sales); evening close (7 pm via Vercel cron + button + agent tool); nicknames for customers and products
+- **Implemented but unverified:** the live agent with Gemini on production (photo reading, Pidgin/Yoruba/Hausa/Igbo understanding, add-nickname/close-the-day tool choice); the 7 pm Vercel cron firing in production
+- **Pending features:** Clips demo; submission text; optional "Keep this shop" (demo → real account); optional Telegram entry; CSV export
 - **P0 priorities:** none open
-- **P1 priorities:** connect AI key and verify agent flows end to end; GitHub repo; Neon + Vercel deploy; record Clips demo; submit by Sun Nov 8
-- **P2 priorities:** Telegram/Dispatch entry; CSV export; i18n of new UI strings
-- **P3 priorities:** polish (formatted promise dates in summaries)
-- **Current milestone:** P1 hosting
-- **Known blockers:** GitHub repo `0xNexuz/shop-ledger` must be created by the owner (this session can't create repos); Neon must be added from the Vercel dashboard (terms acceptance); AI key choice
+- **P1 priorities:** owner tests the live agent with Gemini; record Clips demo; submit by Sun Nov 8
+- **P2 priorities:** demo-account clean-up job; email verification + password reset once an email provider is added; i18n of new UI strings
+- **P3 priorities:** hide the starter Home link; favicon.ico; README screenshots
+- **Current milestone:** P1 live agent check
+- **Known blockers:** Gemini free tier sometimes answers 503 "high demand" (retry); some Nigerian networks reset connections to vercel.app
 
 ## Verification
 
@@ -71,6 +71,10 @@ Keep this file concise and evidence-based. Update current state in place, append
 | 2026-10-31 | `pnpm typecheck` | workspace | VERIFIED clean | |
 | 2026-10-31 | `pnpm agent-native:doctor` | workspace | VERIFIED clean | |
 | 2026-10-31 | Playwright smoke (Chrome headless) | dev server | VERIFIED | sign-in → sample shop → sale → reminder approve → tabs → mobile 390px; raw HTTP approve → 403 `ui_capability_required` |
+| 2026-10-31 | `pnpm exec vitest run` | workspace | VERIFIED 19/19 | adds nickname matching (real name beats someone else's nickname) |
+| 2026-10-31 | `bash scripts/verify-rules.sh` | dev server + PGlite | VERIFIED 31/31 | adds credit_check, notebook draft UI-only, nicknames (unknown not guessed, taught, unique), evening close once per day |
+| 2026-10-31 | `curl` sweep path with wrong / right cron bearer | dev server | VERIFIED | wrong → 401 and no close; right → 200, `[evening-close] closed 28 shop(s), 0 failed` |
+| 2026-10-31 | Playwright: evening close, nicknames, welcome card | dev server | VERIFIED | Close the day → 3 reminder drafts; nickname chip add/remove; stock nicknames; Start your own shop → signup tab + account note; Sign in → login tab; demo from the note; 390px no overflow |
 
 ### Integration and Evidence Status
 
@@ -129,9 +133,24 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Impact:** anyone can create demo accounts (rows in Neon, AI usage on the deployment key); no clean-up job yet
 - **Status:** IMPLEMENTED
 
+### 2026-10-31 — Four agent features: notebook, local languages, credit sense, evening close
+- **Decision:** (1) a photo of the paper notebook goes to the agent, which may only *propose* an import; the owner ticks lines and applies it from Today (`apply-notebook-import` is UI-only), posting ordinary opening-balance and stock-count entries. (2) Dictation (Web Speech, en-NG) and a prompt that understands English, Pidgin, Yoruba, Hausa and Igbo shop words and answers in kind. (3) Credit sense computed from posted entries only (most paid back, lateness, owner or suggested limit); a credit sale over the line fails with `credit_check` until the owner confirms. (4) Evening close: `close-the-day` writes the day's totals and drafts (never sends) reminders for late payers, once per Lagos day; the nightly run rides on the framework's daily sweep (Vercel Cron 18:00 UTC with CRON_SECRET). Nicknames (`add-nickname`) are matched like real names; a nickname can belong to one record only
+- **Reason:** owner asked to raise innovation and use the agent more; each feature keeps the agent's power behind the same server rules and owner approval
+- **Alternatives considered:** letting the agent apply notebook imports directly (rejected: money enters the books unseen); an LLM credit score (rejected: not explainable); a separate cron route (rejected: Hobby allows one daily cron, the framework already owns it)
+- **Evidence:** verify-rules 31/31, vitest 19/19, typecheck, doctor clean, sweep curl test, browser smokes (see Verification)
+- **Impact:** migrations v2 (imports, aliases, credit limit) and v3 (daily_closes) run on deploy
+- **Status:** IMPLEMENTED; live agent behaviour UNVERIFIED until tested with the production AI key
+
+### 2026-10-31 — Welcome card: two clear ways in
+- **Decision:** "Try the demo" first; "Start your own shop" second (opens the framework form on the Create account tab); "Already started a shop? Sign in" (Sign in tab). While the form shows, the panel explains accounts: books belong to the email used; no confirmation email is sent; no password reset yet
+- **Reason:** owner asked how to serve both judges and real shop owners, and whether people know any email works
+- **Alternatives considered:** "Keep this shop" (turn a demo into a real account): books are filed under the account email, so it means moving every record to a new email; deferred
+- **Evidence:** browser smoke on desktop and 390px
+- **Status:** IMPLEMENTED
+
 ## Next Action
 
-- **Next recommended action:** owner creates the empty repo; push; import into Vercel; add Neon + secrets; deploy; connect an AI provider and run the agent flows
-- **Next authorized action:** hosting setup was approved in principle; needs repo owner/name, and confirmation of any cost
-- **Next approved milestone:** P1 hosting
-- **Approval boundary:** pushing to a named repo, creating paid resources, deploying publicly, and submitting all need explicit go-ahead
+- **Next recommended action:** owner tests the live agent with Gemini (notebook photo, a Pidgin sentence, a credit sale to Chinedu, "close the day", "Mama N na Mama Ngozi"); then record the Clips demo
+- **Next authorized action:** pushes to `main` (owner said "push deploy whats needed")
+- **Next approved milestone:** submission by Sun Nov 8 (deadline Tue Nov 10 08:59 Lagos)
+- **Approval boundary:** submitting, paid resources and anything public beyond the existing deploy need explicit go-ahead

@@ -41,13 +41,14 @@ const KIND_LABEL: Record<Entry["kind"], string> = {
   adjustment: "Count",
 };
 
-export function SourceBadge({ source }: { source: string }) {
+export function SourceBadge({ source, className }: { source: string; className?: string }) {
   const agent = source === "agent" || source === "automation";
   return (
     <span
       className={cn(
         "inline-flex shrink-0 items-center rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
         agent ? "bg-brand-violet text-white" : "border border-input text-muted-foreground",
+        className,
       )}
     >
       {SOURCE_LABELS[source] ?? source}

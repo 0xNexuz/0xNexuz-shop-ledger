@@ -81,6 +81,20 @@ expect "only the signed-in app UI can approve a reminder" "only be called from t
   approve-reminder --id "$reminder"
 expect "…or mark it sent" "only be called from the signed-in app UI" mark-reminder-sent --id "$reminder"
 
+expect "an unknown nickname is not guessed" "No customer|not found|Did you mean|unknown" \
+  record-payment --customer "mama pikin" --amount 1000
+expect "the owner can teach a nickname" "\"Mama Pikin\" means Mama Ngozi" \
+  add-nickname --kind customer --ref "mama ngozi" --nickname "Mama Pikin"
+expect "…and the books understand it after" "Mama Ngozi now owes ₦85,000" \
+  record-payment --customer "mama pikin" --amount 1000
+expect "a nickname can mean only one customer" "already means Mama Ngozi" \
+  add-nickname --kind customer --ref chinedu --nickname "mama pikin"
+expect "products learn nicknames too" "\"one bag\" means Rice" \
+  add-nickname --kind product --ref rice --nickname "one bag"
+
+expect "the evening close writes the day's totals" "in sales from [0-9]+ sale" close-the-day
+expect "…once per day: asking again returns the same close" "in sales from [0-9]+ sale" get-latest-close
+
 expect "books still balance after every rejection and void" "ok: true" reconcile-ledger
 
 echo

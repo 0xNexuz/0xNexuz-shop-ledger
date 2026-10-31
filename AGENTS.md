@@ -54,6 +54,10 @@ Bookkeeper for a small shop. `/shop` Today, `/shop/ledger?day=`, `/shop/customer
 | draft-reminders / list-reminders / update-reminder | Debtor reminders (drafts only) |
 | create-product / update-product / create-customer / update-customer | Catalogue |
 | reconcile-ledger | Prove stock and balances match the entries |
+| propose-notebook-import | Draft customers/stock read from a notebook photo (owner applies in UI) |
+| get-credit-standing | Repayment history, limit and good/watch/hold status |
+| close-the-day / get-latest-close | Evening close: day totals + reminder drafts (also runs at 7 pm Lagos) |
+| add-nickname / remove-nickname | Teach or forget another name for a customer or product |
 
 ## For coding agents
 

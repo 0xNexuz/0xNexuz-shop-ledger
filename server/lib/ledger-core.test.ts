@@ -69,6 +69,17 @@ describe("matchByName", () => {
     expect(matchByName(products, "semovita")).toEqual({ kind: "match", item: products[1] });
   });
 
+  it("understands nicknames the owner taught it", () => {
+    const people = [
+      { id: "c1", name: "Mama Ngozi", aliases: ["Mama Pikin"] },
+      { id: "c2", name: "Chinedu Okafor", aliases: [] },
+    ];
+    expect(matchByName(people, "mama pikin")).toEqual({ kind: "match", item: people[0] });
+    // A real name still wins over somebody else's nickname.
+    const clash = [...people, { id: "c3", name: "Mama Pikin", aliases: [] }];
+    expect(matchByName(clash, "Mama Pikin")).toEqual({ kind: "match", item: clash[2] });
+  });
+
   it("reports ambiguity instead of guessing", () => {
     const result = matchByName(products, "indomie");
     expect(result.kind).toBe("ambiguous");

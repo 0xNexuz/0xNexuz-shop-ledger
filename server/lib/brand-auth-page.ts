@@ -47,11 +47,13 @@ export function brandAuthPage(html: string, appBasePath = ""): string {
   // the splash.
   const entry = `<section class="sl-auth-entry" aria-labelledby="sl-entry-title">
     <h1 id="sl-entry-title">Welcome</h1>
-    <p class="sl-entry-sub">See how a shop's books keep themselves. No sign-up, nothing to remember.</p>
+    <p class="sl-entry-sub">Look around a sample shop, or start keeping your own books.</p>
     <button type="button" class="sl-entry-demo" data-sl-try-demo>Try the demo</button>
-    <p class="sl-entry-note" data-sl-try-demo-status role="status">Opens your own copy of a sample provisions shop.</p>
-    <div class="sl-entry-divider"><span>or</span></div>
-    <button type="button" class="sl-entry-signin" data-sl-show-signin>Sign in or create an account</button>
+    <p class="sl-entry-note" data-sl-try-demo-status role="status">A sample provisions shop, already full of sales and debts. Opens in seconds, no sign-up.</p>
+    <p class="sl-entry-or"><span>or</span></p>
+    <button type="button" class="sl-entry-own" data-sl-show-signin="signup">Start your own shop</button>
+    <p class="sl-entry-note">Any email you&rsquo;ll remember and a password. We don&rsquo;t send a confirmation email.</p>
+    <p class="sl-entry-signin-row">Already started a shop? <button type="button" class="sl-entry-signin" data-sl-show-signin="login">Sign in</button></p>
   </section>`;
   const aside = `<aside class="sl-auth-brand" aria-label="About Shop Ledger">
   <div class="sl-auth-logo">${logoLockupSvg("sl-logo--on-dark sl-logo--intro")}</div>
@@ -59,6 +61,15 @@ export function brandAuthPage(html: string, appBasePath = ""): string {
   ${demo}
   <div class="sl-auth-paper">${heroSceneHtml()}</div>
   <p class="sl-auth-note">Say what happened. The agent writes it down, keeps stock and debts straight, and drafts reminders that only you can approve.</p>
+  <div class="sl-auth-account" role="note" aria-label="About your account">
+    <p class="sl-auth-account-title">About your account</p>
+    <ul>
+      <li>Your shop is saved to the email you sign up with. Sign in with the same email and password on any phone to open the same books.</li>
+      <li>No confirmation email is sent, so any email you&rsquo;ll remember works.</li>
+      <li>There&rsquo;s no password reset yet. Keep your password somewhere safe.</li>
+    </ul>
+    <button type="button" class="sl-auth-account-demo" data-sl-try-demo>Just looking? Try the demo instead</button>
+  </div>
 </aside>`;
 
   // Once per browser session: later visits skip straight to the page. Runs
@@ -84,11 +95,14 @@ function tryDemoScript(base: string): string {
   return `(function(){
 var base=${basePath};
 function hex(n){var a=new Uint8Array(n);crypto.getRandomValues(a);return Array.prototype.map.call(a,function(b){return("0"+b.toString(16)).slice(-2)}).join("")}
+function pickTab(mode){var tab=document.querySelector('.auth-page button.tab[data-tab="'+mode+'"]');if(tab&&!tab.classList.contains("active"))tab.click()}
+window.addEventListener("load",function(){try{var m=sessionStorage.getItem("shop-ledger:show-signin");if((m==="signup"||m==="login")&&!/[?&]tab=/.test(location.search)&&document.documentElement.classList.contains("sl-show-signin"))pickTab(m)}catch(_){}});
 function post(path,body){return fetch(base+path,{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})}
 document.addEventListener("click",function(e){
 var show=e.target&&e.target.closest?e.target.closest("[data-sl-show-signin]"):null;
-if(show){document.documentElement.classList.add("sl-show-signin");try{sessionStorage.setItem("shop-ledger:show-signin","1")}catch(_){}
-setTimeout(function(){var f=document.querySelector(".auth-page input,.auth-page button");if(f)f.focus()},50);return}
+if(show){var mode=show.getAttribute("data-sl-show-signin")==="signup"?"signup":"login";
+document.documentElement.classList.add("sl-show-signin");try{sessionStorage.setItem("shop-ledger:show-signin",mode)}catch(_){}
+setTimeout(function(){pickTab(mode);var f=document.querySelector(".auth-page form input:not([type=hidden])")||document.querySelector(".auth-page input,.auth-page button");if(f)f.focus()},50);return}
 var btn=e.target&&e.target.closest?e.target.closest("[data-sl-try-demo]"):null;
 if(!btn||btn.disabled)return;
 var label=btn.textContent,status=btn.parentNode&&btn.parentNode.querySelector("[data-sl-try-demo-status]");
@@ -199,20 +213,34 @@ body {
 .sl-entry-demo:focus-visible, .sl-entry-signin:focus-visible { outline: 3px solid ${PINK}; outline-offset: 2px; }
 .sl-entry-demo:disabled { cursor: progress; opacity: 0.85; }
 .sl-entry-note { margin: 8px 0 0; color: ${MUTED}; font-size: 13px; text-align: center; }
-.sl-entry-divider { display: flex; align-items: center; gap: 10px; margin: 20px 0 14px; color: ${MUTED}; font-size: 13px; }
-.sl-entry-divider::before, .sl-entry-divider::after { content: ""; flex: 1; height: 1px; background: ${PINK}; }
-.sl-entry-signin {
+.sl-entry-or { display: flex; align-items: center; gap: 12px; margin: 18px 0; color: ${MUTED}; font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; }
+.sl-entry-or::before, .sl-entry-or::after { content: ""; flex: 1; height: 1px; background: ${PINK}; }
+.sl-entry-own {
   appearance: none;
   width: 100%;
   padding: 12px 18px;
-  border: 1px solid ${LINE};
+  border: 2px solid ${NAVY};
   border-radius: 8px;
   background: #fff;
   color: ${NAVY};
-  font: 600 15px/1.2 "Poppins", system-ui, sans-serif;
+  font: 600 16px/1.2 "Poppins", system-ui, sans-serif;
   cursor: pointer;
 }
-.sl-entry-signin:hover { background: ${SOFT}; }
+.sl-entry-own:hover { background: ${SOFT}; }
+.sl-entry-own:focus-visible { outline: 3px solid ${PINK}; outline-offset: 2px; }
+.sl-entry-signin-row { margin: 22px 0 0; padding-top: 14px; border-top: 1px solid ${PINK}; color: ${MUTED}; font-size: 13px; text-align: center; }
+.sl-entry-signin {
+  appearance: none;
+  padding: 2px;
+  border: 0;
+  background: none;
+  color: ${LINK};
+  font: 600 13px/1.2 "Poppins", system-ui, sans-serif;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.sl-entry-signin:hover { color: ${NAVY}; }
 html:not(.sl-show-signin) .auth-page { display: none !important; }
 .sl-show-signin .sl-auth-entry { display: none; }
 @media (min-width: 960px) { .sl-auth-brand .sl-auth-demo { display: none; } }
@@ -253,6 +281,30 @@ html:not(.sl-show-signin) .auth-page { display: none !important; }
 }
 .sl-auth-note { margin: 0; max-width: 520px; font-size: 15px; line-height: 1.55; color: rgba(255, 255, 255, 0.82); }
 @media (max-width: 959px) { .sl-auth-note { display: none; } }
+/* Shown beside the account form: what an account means here. */
+.sl-auth-account { display: none; max-width: 520px; padding: 16px 18px; border: 1px solid rgba(250, 216, 254, 0.45); border-radius: 8px 24px 8px 8px; }
+.sl-show-signin .sl-auth-account { display: block; }
+.sl-show-signin .sl-auth-note { display: none; }
+.sl-auth-account-title { margin: 0 0 8px; color: ${PINK}; font-weight: 600; font-size: 14px; }
+.sl-auth-account ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 14px; line-height: 1.5; color: rgba(255, 255, 255, 0.88); }
+.sl-auth-account-demo {
+  appearance: none;
+  margin-top: 12px;
+  padding: 2px;
+  border: 0;
+  background: none;
+  color: ${PINK};
+  font: 600 14px/1.3 "Poppins", system-ui, sans-serif;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.sl-auth-account-demo:hover { color: #fff; }
+.sl-auth-account-demo:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+/* Once the account form is chosen, the panel explains accounts instead of the scene
+   (and on a phone stays short, since the form sits under it). */
+.sl-show-signin .sl-auth-paper { display: none; }
+@media (max-width: 959px) { .sl-show-signin .sl-auth-brand .sl-auth-demo { display: none; } }
 
 .card {
   background: #fff !important;

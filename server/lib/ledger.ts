@@ -11,6 +11,7 @@ import {
   kobo,
   loadCustomers,
   loadProducts,
+  parseAliases,
   occurredAt,
   resolveCustomer,
   resolveProduct,
@@ -589,6 +590,7 @@ export interface Debtor {
   daysOverdue: number | null;
   lastActivityAt: string | null;
   openReminder: "draft" | "approved" | null;
+  aliases: string[];
 }
 
 export async function listDebtors(shop: ShopRef, limit: number, today: string): Promise<Debtor[]> {
@@ -608,6 +610,7 @@ export async function listAccounts(
       note: customers.note,
       balanceKobo: customers.balanceKobo,
       lastActivityAt: customers.lastActivityAt,
+      aliases: customers.aliases,
     })
     .from(customers)
     .where(
@@ -652,6 +655,7 @@ export async function listAccounts(
       daysOverdue: owes && promisedBy ? Math.max(0, daysOverdue(promisedBy, today)) : null,
       lastActivityAt: r.lastActivityAt,
       openReminder: (reminder?.status as "draft" | "approved" | undefined) ?? null,
+      aliases: parseAliases(r.aliases),
     };
   });
 }

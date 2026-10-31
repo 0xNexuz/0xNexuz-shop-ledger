@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { EmptyState } from "@/components/brand/LineArt";
+import { Nicknames } from "@/components/shop/Nicknames";
 import { money } from "@/components/shop/format";
 import { Button } from "@/components/ui/button";
 import {
@@ -75,6 +76,7 @@ export default function ShopStock() {
                   <td className="px-3 py-2.5">
                     <span className="font-medium">{p.name}</span>
                     <span className="block text-xs text-muted-foreground">per {p.unit}</span>
+                    <Nicknames compact kind="product" id={p.id} name={p.name} aliases={p.aliases} className="mt-1" />
                   </td>
                   <td className="tabular px-3 py-2.5 text-right">{money(p.price, shop.currency)}</td>
                   <td className="tabular px-3 py-2.5 text-right text-muted-foreground">

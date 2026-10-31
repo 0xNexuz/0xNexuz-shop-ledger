@@ -75,6 +75,7 @@ export const productOut = z.object({
   lowStockAt: z.number(),
   lowStock: z.boolean(),
   archived: z.boolean(),
+  aliases: z.array(z.string()).describe("Nicknames the owner uses for this product"),
 });
 
 export const debtorOut = z.object({
@@ -87,6 +88,7 @@ export const debtorOut = z.object({
   daysOverdue: z.number().nullable(),
   lastActivityAt: z.string().nullable(),
   openReminder: z.enum(["draft", "approved"]).nullable(),
+  aliases: z.array(z.string()).describe("Nicknames the owner uses for this customer"),
 });
 
 export const stockAfterOut = z.object({
@@ -116,6 +118,7 @@ export function productView(row: ProductRow) {
     lowStockAt: row.lowStockAt,
     lowStock: !row.archived && row.stockQty <= row.lowStockAt,
     archived: row.archived,
+    aliases: row.aliases,
   };
 }
 

@@ -7,6 +7,8 @@
 export interface Named {
   id: string;
   name: string;
+  /** Other names the owner uses for this record ("Mama N", "one bag"). */
+  aliases?: readonly string[];
 }
 
 export type MatchResult<T extends Named> =
@@ -42,6 +44,12 @@ export function matchByName<T extends Named>(items: readonly T[], ref: string): 
   const [onlyExact] = exact;
   if (exact.length === 1 && onlyExact) return { kind: "match", item: onlyExact };
   if (exact.length > 1) return { kind: "ambiguous", candidates: exact };
+
+  // A nickname the owner taught the shop is as good as the real name.
+  const nicknamed = items.filter((item) => item.aliases?.some((alias) => normalizeName(alias) === wanted));
+  const [onlyNicknamed] = nicknamed;
+  if (nicknamed.length === 1 && onlyNicknamed) return { kind: "match", item: onlyNicknamed };
+  if (nicknamed.length > 1) return { kind: "ambiguous", candidates: nicknamed.slice(0, 5) };
 
   const contains = items.filter((item) => {
     const name = normalizeName(item.name);
