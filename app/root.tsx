@@ -21,7 +21,7 @@ import {
 } from "react-router";
 import type { LinksFunction } from "react-router";
 
-import { Preloader } from "@/components/brand/Logo";
+import { Preloader, StartupSplash } from "@/components/brand/Logo";
 import { Layout as AppLayout } from "@/components/layout/Layout";
 import { AppToolkitProvider } from "@/components/ui/toolkit-provider";
 import { useNavigationState } from "@/hooks/use-navigation-state";
@@ -171,6 +171,7 @@ function AppContent() {
       <AppLayout>
         <Outlet />
       </AppLayout>
+      <StartupSplash />
     </>
   );
 }

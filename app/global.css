@@ -332,45 +332,33 @@
   stroke-width: 8;
 }
 
-/* Preloader: a ledger rule with a pen stroke running along it. */
-.sl-preloader-line {
-  position: relative;
-  display: block;
-  width: 168px;
-  height: 4px;
-  overflow: hidden;
-  border-radius: 2px;
-  background-image: radial-gradient(circle, hsl(var(--muted-foreground) / 0.55) 1px, transparent 1.4px);
-  background-size: 6px 4px;
+/* The doodled logo on the dark page: light lines, card-coloured paper. */
+.dark .sl-logo--doodle {
+  color: hsl(var(--foreground));
+  --sl-paper: hsl(var(--card));
+  --sl-cloth: hsl(var(--secondary));
+  --sl-word: hsl(var(--foreground));
+  --sl-tag: hsl(var(--primary));
 }
-.sl-preloader-line > span {
-  position: absolute;
-  inset-block: 0;
-  left: 30%;
-  width: 36%;
-  border-radius: 2px;
-  background: hsl(var(--foreground));
-}
+
+/* Preloader: the doodled logo fades in after a beat, so very fast loads skip it. */
 @media (prefers-reduced-motion: no-preference) {
   .sl-preloader-inner {
     opacity: 0;
     animation: sl-preloader-in 0.35s ease 0.2s forwards;
   }
-  .sl-preloader-line > span {
-    left: 0;
-    animation: sl-preloader-pen 1.4s cubic-bezier(0.6, 0, 0.3, 1) infinite;
-  }
+}
+.sl-preloader--instant .sl-preloader-inner {
+  opacity: 1;
+  animation: none;
+}
+.sl-preloader--leaving {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
 }
 @keyframes sl-preloader-in {
   to {
     opacity: 1;
-  }
-}
-@keyframes sl-preloader-pen {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(260%);
   }
 }

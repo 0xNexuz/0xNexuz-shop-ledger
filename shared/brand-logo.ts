@@ -25,13 +25,14 @@ function word(
   const stroke = weight
     ? ` stroke-width="${weight}" stroke-linejoin="round"`
     : ' stroke="none"';
-  return `<g transform="translate(${x} ${top}) scale(${scale})"><path d="${glyphs.d}"${stroke}/></g>`;
+  return `<g transform="translate(${x} ${top}) scale(${scale})"><path pathLength="1" d="${glyphs.d}"${stroke}/></g>`;
 }
 
 /**
  * Full lockup, 1028 × 440: tagline, SHOP / LEDGER, and the owner whose
- * shoulder sits over the L. Add `sl-logo--on-dark` on navy and
- * `sl-logo--intro` to play the entrance once.
+ * shoulder sits over the L. Add `sl-logo--on-dark` on navy,
+ * `sl-logo--intro` to play the entrance once, or `sl-logo--doodle` for the
+ * looping draw-on used while loading.
  */
 export function logoLockupSvg(className = ""): string {
   return `<svg class="sl-logo ${className}" viewBox="0 0 1028 440" role="img" aria-label="Shop Ledger">
@@ -111,6 +112,7 @@ export const LOGO_CSS = `
 .sl-logo-tag { fill: var(--sl-tag); }
 .sl-mark-tile { fill: #000B39; }
 
+/* --sl-logo-t0 delays the entrance, e.g. until a splash screen has faded. */
 @media (prefers-reduced-motion: no-preference) {
   .sl-logo--intro .sl-fan path, .sl-mark--intro .sl-fan path {
     transform-box: view-box;
@@ -118,18 +120,36 @@ export const LOGO_CSS = `
     opacity: 0;
     transform: rotate(56deg) scale(.35);
     animation: sl-logo-unfold .6s cubic-bezier(.2, .9, .25, 1.12) forwards;
-    animation-delay: calc(.3s + var(--i, 10) * 50ms);
+    animation-delay: calc(var(--sl-logo-t0, 0s) + .3s + var(--i, 10) * 50ms);
   }
-  .sl-logo--intro .sl-logo-art { opacity: 0; transform: translateY(26px); animation: sl-logo-in .5s cubic-bezier(.2, .9, .3, 1) forwards; }
-  .sl-logo--intro .sl-logo-row1 { opacity: 0; transform: translateX(-28px); animation: sl-logo-in .45s cubic-bezier(.2, .9, .3, 1) .6s forwards; }
-  .sl-logo--intro .sl-logo-row2 { opacity: 0; transform: translateX(-28px); animation: sl-logo-in .45s cubic-bezier(.2, .9, .3, 1) .72s forwards; }
-  .sl-logo--intro .sl-logo-tag { opacity: 0; animation: sl-logo-in .4s ease 1.05s forwards; }
-  .sl-logo--intro .sl-mouth { transform-box: fill-box; transform-origin: center top; animation: sl-logo-talk .16s ease-in-out 1.1s 4 alternate; }
+  .sl-logo--intro .sl-logo-art { opacity: 0; transform: translateY(26px); animation: sl-logo-in .5s cubic-bezier(.2, .9, .3, 1) var(--sl-logo-t0, 0s) forwards; }
+  .sl-logo--intro .sl-logo-row1 { opacity: 0; transform: translateX(-28px); animation: sl-logo-in .45s cubic-bezier(.2, .9, .3, 1) calc(var(--sl-logo-t0, 0s) + .6s) forwards; }
+  .sl-logo--intro .sl-logo-row2 { opacity: 0; transform: translateX(-28px); animation: sl-logo-in .45s cubic-bezier(.2, .9, .3, 1) calc(var(--sl-logo-t0, 0s) + .72s) forwards; }
+  .sl-logo--intro .sl-logo-tag { opacity: 0; animation: sl-logo-in .4s ease calc(var(--sl-logo-t0, 0s) + 1.05s) forwards; }
+  .sl-logo--intro .sl-mouth { transform-box: fill-box; transform-origin: center top; animation: sl-logo-talk .16s ease-in-out calc(var(--sl-logo-t0, 0s) + 1.1s) 4 alternate; }
   .sl-logo--intro .sl-eye, .sl-mark--loading .sl-eye {
     transform-box: fill-box;
     transform-origin: center;
-    animation: sl-logo-blink 5s ease 2.2s infinite;
+    animation: sl-logo-blink 5s ease calc(var(--sl-logo-t0, 0s) + 2.2s) infinite;
   }
+  /*
+   * Doodle (the preloader): her outline is drawn line by line, the letters are
+   * traced as if carved, the colours flood in, it holds, fades, and starts
+   * again. Every part runs the same 2.4 s loop, offset so the order holds.
+   */
+  .sl-logo--doodle .sl-figure path, .sl-logo--doodle .sl-figure circle,
+  .sl-logo--doodle .sl-logo-word path, .sl-logo--doodle .sl-logo-tag path {
+    stroke-dasharray: 1;
+    animation: sl-doodle-line 2.4s ease-in-out infinite both, sl-doodle-fill 2.4s ease infinite both;
+    animation-delay: var(--sl-doodle-at, 0s);
+  }
+  .sl-logo--doodle .sl-fan path { --sl-doodle-at: calc(var(--i, 9) * 30ms); }
+  .sl-logo--doodle .sl-wrap { --sl-doodle-at: .15s; }
+  .sl-logo--doodle .sl-face { --sl-doodle-at: .3s; }
+  .sl-logo--doodle .sl-book { --sl-doodle-at: .4s; }
+  .sl-logo--doodle .sl-logo-row1 { --sl-doodle-at: .3s; }
+  .sl-logo--doodle .sl-logo-row2 { --sl-doodle-at: .5s; }
+  .sl-logo--doodle .sl-logo-tag { --sl-doodle-at: .65s; }
   /* A wave of violet runs through the pleats: once on hover, looping while loading. */
   .sl-mark-hover:hover .sl-fan path[style], .sl-mark-hover:focus-visible .sl-fan path[style] {
     animation: sl-logo-wave .9s linear calc(var(--i) * 40ms) both;
@@ -142,5 +162,12 @@ export const LOGO_CSS = `
 @keyframes sl-logo-in { to { opacity: 1; transform: none; } }
 @keyframes sl-logo-talk { to { transform: scaleY(.4); } }
 @keyframes sl-logo-blink { 0%, 95%, 100% { transform: none; } 97.5% { transform: scaleY(.12); } }
+@keyframes sl-doodle-line {
+  0% { stroke-dashoffset: 1; opacity: 1; }
+  38% { stroke-dashoffset: 0; }
+  90% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 0; }
+}
+@keyframes sl-doodle-fill { 0%, 34% { fill-opacity: 0; } 52%, 100% { fill-opacity: 1; } }
 @keyframes sl-logo-wave { 0%, 18%, 100% { fill: var(--sl-pleat); } 9% { fill: #6C63E1; } }
 `;

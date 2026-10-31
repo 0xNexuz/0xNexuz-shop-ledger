@@ -1,11 +1,12 @@
 import { actionErrorMessage, useActionMutation, useActionQuery } from "@agent-native/core/client/hooks";
 import { useSetPageTitle } from "@agent-native/toolkit/app-shell/header-actions";
 import { IconPlus } from "@tabler/icons-react";
-import { useState } from "react";
-import { NavLink, Outlet, useOutletContext } from "react-router";
+import { useEffect, useRef, useState } from "react";
+import { NavLink, Outlet, useOutletContext, useSearchParams } from "react-router";
 import { toast } from "sonner";
 
 import { HeroScene } from "@/components/brand/LineArt";
+import { usePreloaderHold } from "@/components/brand/preloader-store";
 import { SaleDialog } from "@/components/shop/SaleDialog";
 import { errorCodeOf } from "@/components/shop/format";
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,8 @@ const TABS = [
 export default function ShopLayout() {
   const overview = useActionQuery("get-shop-overview", {});
   const [saleOpen, setSaleOpen] = useState(false);
+  // If the opening screen is up, keep it until the shop's first data is here.
+  usePreloaderHold(overview.isPending, "extend");
   useSetPageTitle(overview.data?.shop.name ?? "Shop Ledger");
 
   if (overview.isPending) {
@@ -105,10 +108,37 @@ function Onboarding() {
     onSuccess: () => toast.success("Your shop is ready."),
     onError: (error) => toast.error(actionErrorMessage(error) ?? "Couldn't create the shop."),
   });
+  const [params, setParams] = useSearchParams();
+  // Arriving from "Try the demo" on the sign-in page: open the sample shop straight away.
+  const autoDemo = params.get("demo") === "1";
+  const clearDemoParam = () => {
+    if (!autoDemo) return;
+    const next = new URLSearchParams(params);
+    next.delete("demo");
+    setParams(next, { replace: true });
+  };
   const demo = useActionMutation("load-demo-data", {
-    onSuccess: () => toast.success("Sample shop loaded: a week of sales, debts and stock."),
-    onError: (error) => toast.error(actionErrorMessage(error) ?? "Couldn't load the sample shop."),
+    onSuccess: () => {
+      clearDemoParam();
+      toast.success("Sample shop loaded: a week of sales, debts and stock.");
+    },
+    onError: (error) => {
+      clearDemoParam();
+      toast.error(actionErrorMessage(error) ?? "Couldn't load the sample shop.");
+    },
   });
+  const started = useRef(false);
+  useEffect(() => {
+    if (autoDemo && !started.current) {
+      started.current = true;
+      demo.mutate({});
+    }
+  }, [autoDemo, demo]);
+
+  // The app's opening screen covers the set-up until the shop screen replaces this one.
+  const settingUpDemo = (autoDemo || started.current) && !demo.isError;
+  usePreloaderHold(settingUpDemo, "open");
+  if (settingUpDemo) return null;
 
   return (
     <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:grid-rows-[auto_1fr] lg:gap-x-14 lg:py-14">

@@ -121,6 +121,14 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Impact:** the preloader replaces the framework's skeleton as the server-rendered shell (`clientOnlyFallback`); Agent-Native's own logo files are untouched (still used by its "Powered by" badge)
 - **Status:** IMPLEMENTED, awaiting push approval
 
+### 2026-10-31 — One-tap demo entry and doodled preloader
+- **Decision:** "Try the demo, no sign-up" button on the sign-in panel; each tap makes a private throwaway account (random `visitor-…@demo.shop-ledger.invalid`, random password never shown) through the framework's own register + login endpoints, then `/shop?demo=1` loads the sample shop. Preloader is the logo drawn line by line with the letters traced, then coloured; one shared overlay (`StartupSplash` + `preloader-store`) so screens never hand over between loaders
+- **Reason:** owner wants judges and visitors in without making an account, and a preloader that can actually be seen
+- **Alternatives considered:** a shared demo login (visitors would see and change each other's data); turning auth off (same problem, plus open admin)
+- **Evidence:** local browser smoke: demo button → sample shop on desktop and phone; splash and overlay traced frame by frame (no blank gaps); hydration keeps the panel (splash must not be a `<div>`); typecheck, 18 vitest, doctor clean, full sample-shop smoke
+- **Impact:** anyone can create demo accounts (rows in Neon, AI usage on the deployment key); no clean-up job yet
+- **Status:** IMPLEMENTED
+
 ## Next Action
 
 - **Next recommended action:** owner creates the empty repo; push; import into Vercel; add Neon + secrets; deploy; connect an AI provider and run the agent flows

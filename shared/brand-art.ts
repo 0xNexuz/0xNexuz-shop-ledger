@@ -58,19 +58,19 @@ export function ownerFigure(weight: number): string {
     <path pathLength="1" d="M244 176 C 258 184, 266 200, 262 214 C 250 204, 244 194, 240 180 Z" style="fill:var(--sl-cloth)"/>
   </g>
   <g class="sl-face" stroke-width="${thin}">
-    <circle class="sl-eye" cx="162" cy="210" r="${eye}" fill="currentColor" stroke="none"/>
-    <circle class="sl-eye" cx="208" cy="210" r="${eye}" fill="currentColor" stroke="none"/>
-    <path d="M150 194 C 156 189, 164 189, 170 192"/>
-    <path d="M200 192 C 206 189, 214 189, 220 194"/>
-    <path d="M186 214 C 184 224, 182 230, 190 232"/>
-    <path class="sl-mouth" d="M168 242 C 178 256, 194 256, 204 242 Z" fill="currentColor"/>
-    <path d="M122 214 L 122 228"/><circle cx="122" cy="236" r="8" style="fill:var(--sl-paper)"/>
-    <path d="M246 214 L 246 228"/><circle cx="246" cy="236" r="8" style="fill:var(--sl-paper)"/>
+    <circle pathLength="1" class="sl-eye" cx="162" cy="210" r="${eye}" fill="currentColor" stroke="none"/>
+    <circle pathLength="1" class="sl-eye" cx="208" cy="210" r="${eye}" fill="currentColor" stroke="none"/>
+    <path pathLength="1" d="M150 194 C 156 189, 164 189, 170 192"/>
+    <path pathLength="1" d="M200 192 C 206 189, 214 189, 220 194"/>
+    <path pathLength="1" d="M186 214 C 184 224, 182 230, 190 232"/>
+    <path pathLength="1" class="sl-mouth" d="M168 242 C 178 256, 194 256, 204 242 Z" fill="currentColor"/>
+    <path pathLength="1" d="M122 214 L 122 228"/><circle pathLength="1" cx="122" cy="236" r="8" style="fill:var(--sl-paper)"/>
+    <path pathLength="1" d="M246 214 L 246 228"/><circle pathLength="1" cx="246" cy="236" r="8" style="fill:var(--sl-paper)"/>
   </g>
   <g class="sl-book">
-    <path d="M86 334 C 128 318, 166 320, 184 334 C 202 320, 240 318, 282 334 L 278 386 C 240 374, 204 376, 184 388 C 164 376, 128 374, 90 386 Z" fill="currentColor"/>
-    <path d="M92 326 C 130 310, 166 312, 184 326 C 202 312, 238 310, 276 326 L 274 372 C 238 360, 202 362, 184 374 C 166 362, 130 360, 94 372 Z" style="fill:var(--sl-paper)"/>
-    <path d="M184 326 L 184 374"/>
+    <path pathLength="1" d="M86 334 C 128 318, 166 320, 184 334 C 202 320, 240 318, 282 334 L 278 386 C 240 374, 204 376, 184 388 C 164 376, 128 374, 90 386 Z" fill="currentColor"/>
+    <path pathLength="1" d="M92 326 C 130 310, 166 312, 184 326 C 202 312, 238 310, 276 326 L 274 372 C 238 360, 202 362, 184 374 C 166 362, 130 360, 94 372 Z" style="fill:var(--sl-paper)"/>
+    <path pathLength="1" d="M184 326 L 184 374"/>
     <path class="sl-ink" pathLength="1" d="M114 340 C 132 334, 150 334, 166 340" stroke-width="${thin}"/>
     <path class="sl-ink" pathLength="1" d="M114 354 C 132 348, 150 348, 166 354" stroke-width="${thin}"/>
     <path class="sl-ink" pathLength="1" d="M202 340 C 220 334, 238 334, 256 340" stroke-width="${thin}"/>

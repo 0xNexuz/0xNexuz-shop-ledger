@@ -4,13 +4,15 @@ import { LOGO_CSS, logoLockupSvg } from "../../shared/brand-logo.js";
 /**
  * Brands the framework's sign-in page (rendered by the toolkit) for Shop
  * Ledger: a navy panel with the animated logo and the hero scene beside the
- * sign-in card, the FutureUni fonts, and a light card. The framework's markup, scripts and form
- * behaviour are left untouched; this only adds a stylesheet and one aside.
+ * sign-in card, the FutureUni fonts, and a light card. The framework's
+ * markup, scripts and form behaviour are left untouched; this only adds a
+ * stylesheet and one aside (with the "Try the demo" button).
  */
 export function brandAuthPage(html: string, appBasePath = ""): string {
-  // The framework places this markup inside its hydration root. The style and
-  // aside lead the root and hydration leaves them in place (checked in the
-  // browser smoke: the panel stays and the sign-in form still works).
+  // The framework places this markup inside its hydration root. React skips
+  // leading root nodes whose tag differs from the page's first element (a
+  // <div>), so the <style>, <section> and <aside> stay in place after
+  // hydration (checked in the browser smoke).
   const base = appBasePath.replace(/\/+$/, "");
   const fonts = [
     ["Poppins", "400", "poppins-latin-400-normal.woff2"],
@@ -25,14 +27,58 @@ export function brandAuthPage(html: string, appBasePath = ""): string {
     .join("");
 
   const style = `<style data-shop-ledger-brand>${fonts}${BRAND_CSS}${LOGO_CSS}${AUTH_CSS}</style>`;
+  const demo = `<div class="sl-auth-demo">
+    <button type="button" class="sl-auth-demo-btn" data-sl-try-demo>Try the demo, no sign-up</button>
+    <p class="sl-auth-demo-note" data-sl-try-demo-status role="status">Opens your own copy of a sample shop. Nothing to remember.</p>
+  </div>
+  <script>${tryDemoScript(base)}</script>`;
+  // Opening screen: the logo is doodled and its letters carved on white at
+  // first paint; it fades by itself (CSS only), then the panel's logo and
+  // scene play. Skipped entirely when the visitor prefers reduced motion.
+  // Must not be a <div>: React hydrates the root's first <div> as the sign-in
+  // page, so a leading <div> would be mistaken for it and wipe the panel.
+  const splash = `<section class="sl-splash" aria-hidden="true"><div class="sl-splash-inner">
+    <div class="sl-splash-logo">${logoLockupSvg("sl-logo--doodle")}</div>
+  </div></section>`;
   const aside = `<aside class="sl-auth-brand" aria-label="About Shop Ledger">
   <div class="sl-auth-logo">${logoLockupSvg("sl-logo--on-dark sl-logo--intro")}</div>
   <h2 class="sl-auth-title">Your shop&rsquo;s books, <span>kept by talking.</span></h2>
+  ${demo}
   <div class="sl-auth-paper">${heroSceneHtml()}</div>
   <p class="sl-auth-note">Say what happened. The agent writes it down, keeps stock and debts straight, and drafts reminders that only you can approve.</p>
 </aside>`;
 
-  return `${style}${aside}${html}`;
+  return `${style}${splash}${aside}${html}`;
+}
+
+/**
+ * "Try the demo": one tap makes a private throwaway account through the same
+ * register + login endpoints the sign-up form uses, then opens /shop?demo=1,
+ * which loads the sample shop. Each visitor gets their own copy, so judges
+ * never see each other's entries. The password is random and never shown;
+ * the browser keeps the session cookie.
+ *
+ * Plain script with a delegated listener so it keeps working after the
+ * framework hydrates the page. Only the app's own base path is interpolated.
+ */
+function tryDemoScript(base: string): string {
+  const basePath = JSON.stringify(base).replace(/</g, "\\u003c");
+  return `(function(){
+var base=${basePath};
+function hex(n){var a=new Uint8Array(n);crypto.getRandomValues(a);return Array.prototype.map.call(a,function(b){return("0"+b.toString(16)).slice(-2)}).join("")}
+function post(path,body){return fetch(base+path,{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})}
+document.addEventListener("click",function(e){
+var btn=e.target&&e.target.closest?e.target.closest("[data-sl-try-demo]"):null;
+if(!btn||btn.disabled)return;
+var label=btn.textContent,status=document.querySelector("[data-sl-try-demo-status]");
+btn.disabled=true;btn.textContent="Opening the sample shop\u2026";
+var cred={email:"visitor-"+hex(5)+"@demo.shop-ledger.invalid",password:hex(18)};
+post("/_agent-native/auth/register",{email:cred.email,password:cred.password,callbackURL:base+"/shop?demo=1"})
+.then(function(r){if(!r.ok)throw new Error("register "+r.status);return post("/_agent-native/auth/login",cred)})
+.then(function(r){if(!r.ok)throw new Error("login "+r.status);location.assign(base+"/shop?demo=1")})
+.catch(function(){btn.disabled=false;btn.textContent=label;if(status)status.textContent="Couldn\u2019t open the demo just now. Try again, or create an account."});
+});
+})();`;
 }
 
 const NAVY = "#000B39";
@@ -77,6 +123,43 @@ body {
 @media (min-width: 960px) { .sl-auth-logo { width: clamp(260px, 24vw, 360px); } }
 /* The scene starts once the logo has landed. */
 .sl-auth-paper { --sl-t0: 1.1s; }
+
+.sl-splash { display: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .sl-splash {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    background: #fff;
+    animation: sl-splash-out .45s ease 1.9s forwards;
+  }
+  /* The panel's own entrance waits for the splash. */
+  .sl-auth-brand { --sl-logo-t0: 2.05s; }
+  .sl-auth-paper { --sl-t0: 3.2s; }
+}
+.sl-splash-logo { width: min(320px, 76vw); }
+@keyframes sl-splash-out { to { opacity: 0; visibility: hidden; } }
+.sl-auth-demo { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.sl-auth-demo-btn {
+  appearance: none;
+  padding: 12px 20px;
+  border: 2px solid ${PINK};
+  border-radius: 8px 24px 8px 8px;
+  background: ${PINK};
+  color: ${NAVY};
+  font: 600 16px/1.2 "Poppins", system-ui, sans-serif;
+  box-shadow: 4px 4px 0 #6C63E1;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+.sl-auth-demo-btn:hover { background: #fff; }
+.sl-auth-demo-btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #6C63E1; }
+.sl-auth-demo-btn:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+.sl-auth-demo-btn:disabled { cursor: progress; opacity: 0.85; }
+.sl-auth-demo-note { margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.82); }
 .sl-auth-title {
   margin: 0;
   font-family: "Space Grotesk Variable", "Space Grotesk", system-ui, sans-serif;
