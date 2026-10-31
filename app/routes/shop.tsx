@@ -1,10 +1,11 @@
 import { actionErrorMessage, useActionMutation, useActionQuery } from "@agent-native/core/client/hooks";
 import { useSetPageTitle } from "@agent-native/toolkit/app-shell/header-actions";
-import { IconBuildingStore, IconPlus, IconSparkles } from "@tabler/icons-react";
+import { IconPlus } from "@tabler/icons-react";
 import { useState } from "react";
 import { NavLink, Outlet, useOutletContext } from "react-router";
 import { toast } from "sonner";
 
+import { HeroScene } from "@/components/brand/LineArt";
 import { SaleDialog } from "@/components/shop/SaleDialog";
 import { errorCodeOf } from "@/components/shop/format";
 import { Button } from "@/components/ui/button";
@@ -110,18 +111,24 @@ function Onboarding() {
   });
 
   return (
-    <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col justify-center px-4 py-12 sm:px-6">
-      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Shop Ledger</p>
-      <h1 className="mt-3 font-display text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl">
-        Your shop&apos;s books,
-        <br />
-        <span className="font-light">kept by talking.</span>
-      </h1>
-      <p className="mt-4 max-w-xl text-[15px] text-muted-foreground">
-        Say what happened: &ldquo;sold 3 bags of rice to Mama Ngozi, she&apos;ll pay Friday&rdquo;. The agent writes it in the
-        ledger, keeps stock and debts straight, and drafts polite reminders that you approve.
-      </p>
-      <div className="mt-10 grid gap-4 sm:grid-cols-2">
+    <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:grid-rows-[auto_1fr] lg:gap-x-14 lg:py-14">
+      <div className="self-end">
+        <h1 className="font-display text-4xl font-bold leading-[1.02] tracking-tight sm:text-5xl xl:text-6xl">
+          Your shop&apos;s books,
+          <br />
+          <span className="font-light">kept by talking.</span>
+        </h1>
+        <p className="mt-4 max-w-xl text-[15px] text-muted-foreground">
+          Say what happened. The agent writes it in the ledger, keeps stock and debts straight, and drafts polite
+          reminders that only you can approve.
+        </p>
+      </div>
+
+      <div className="brand-corner rounded-lg border-2 border-foreground bg-white p-3 sm:p-6 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-center">
+        <HeroScene />
+      </div>
+
+      <div className="space-y-4 self-start">
         <form
           className="brand-corner space-y-3 rounded-lg border-2 border-foreground bg-card p-5"
           onSubmit={(event) => {
@@ -129,30 +136,34 @@ function Onboarding() {
             if (name.trim().length >= 2) create.mutate({ name: name.trim(), currency: "NGN" });
           }}
         >
-          <IconBuildingStore className="size-6" />
-          <div className="space-y-1.5">
-            <Label htmlFor="shop-name">Name your shop</Label>
+          <Label htmlFor="shop-name" className="font-display text-lg font-semibold">
+            Name your shop
+          </Label>
+          <div className="flex flex-col gap-2 sm:flex-row">
             <Input
               id="shop-name"
               value={name}
               onChange={(event) => setName(event.target.value)}
               placeholder="e.g. Mama Chioma Provisions"
               maxLength={80}
+              className="sm:flex-1"
             />
+            <Button type="submit" className="shrink-0" disabled={name.trim().length < 2 || create.isPending}>
+              {create.isPending ? "Creating…" : "Start my ledger"}
+            </Button>
           </div>
-          <Button type="submit" className="w-full" disabled={name.trim().length < 2 || create.isPending}>
-            {create.isPending ? "Creating…" : "Start my ledger"}
-          </Button>
         </form>
-        <div className="brand-corner flex flex-col justify-between gap-4 rounded-lg bg-secondary p-5">
-          <IconSparkles className="size-6 text-foreground" />
-          <div>
-            <h2 className="font-display text-lg font-semibold">Just looking?</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Open a sample provisions shop with a week of made-up sales, debts and stock to try it out.
-            </p>
-          </div>
-          <Button variant="outline" className="w-full bg-card" disabled={demo.isPending} onClick={() => demo.mutate({})}>
+        <div className="flex flex-col gap-3 rounded-lg bg-secondary p-5 sm:flex-row sm:items-center">
+          <p className="flex-1 text-sm text-secondary-foreground">
+            <span className="font-semibold">Just looking?</span> Open a sample provisions shop with a week of made-up
+            sales, debts and stock.
+          </p>
+          <Button
+            variant="outline"
+            className="shrink-0 bg-card"
+            disabled={demo.isPending}
+            onClick={() => demo.mutate({})}
+          >
             {demo.isPending ? "Setting up…" : "Open the sample shop"}
           </Button>
         </div>

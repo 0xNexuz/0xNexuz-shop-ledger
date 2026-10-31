@@ -318,3 +318,10 @@
 .tabular {
   font-variant-numeric: tabular-nums;
 }
+
+/* Line art follows the theme in empty states; the hero scene keeps its paper. */
+.dark .sl-spot {
+  color: hsl(var(--foreground));
+  --sl-paper: hsl(var(--card));
+  --sl-cloth: hsl(var(--secondary));
+}

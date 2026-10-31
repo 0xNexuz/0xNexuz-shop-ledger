@@ -2,6 +2,7 @@ import { useActionQuery } from "@agent-native/core/client/hooks";
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import { useSearchParams } from "react-router";
 
+import { EmptyState } from "@/components/brand/LineArt";
 import { EntryLine } from "@/components/shop/EntryLine";
 import { dayLabel, money, shiftDay } from "@/components/shop/format";
 import { Button } from "@/components/ui/button";
@@ -114,9 +115,9 @@ export default function ShopLedger() {
           ))}
         </ul>
       ) : (
-        <p className="rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+        <EmptyState art="book">
           No {kind ? KINDS.find((k) => k.value === kind)?.label.toLowerCase() : "entries"} on this day.
-        </p>
+        </EmptyState>
       )}
     </div>
   );

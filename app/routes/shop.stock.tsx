@@ -3,6 +3,7 @@ import { IconAlertTriangle, IconClipboardCheck, IconPackageImport, IconPlus } fr
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { EmptyState } from "@/components/brand/LineArt";
 import { money } from "@/components/shop/format";
 import { Button } from "@/components/ui/button";
 import {
@@ -99,8 +100,10 @@ export default function ShopStock() {
               ))}
               {!products.length ? (
                 <tr>
-                  <td colSpan={5} className="px-3 py-8 text-center text-muted-foreground">
-                    No products yet. Add the things you sell.
+                  <td colSpan={5} className="p-3">
+                    <EmptyState art="shelf" className="border-0">
+                      No products yet. Add the things you sell.
+                    </EmptyState>
                   </td>
                 </tr>
               ) : null}

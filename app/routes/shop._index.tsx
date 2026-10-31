@@ -2,6 +2,7 @@ import { useActionQuery } from "@agent-native/core/client/hooks";
 import { IconAlertTriangle, IconArrowRight, IconMessageCircle } from "@tabler/icons-react";
 import { Link } from "react-router";
 
+import { EmptyState } from "@/components/brand/LineArt";
 import { AskBar } from "@/components/shop/AskBar";
 import { EntryLine } from "@/components/shop/EntryLine";
 import { ReminderCard } from "@/components/shop/ReminderCard";
@@ -90,9 +91,7 @@ export default function ShopToday() {
               ))}
             </ul>
           ) : (
-            <p className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-              Nothing recorded yet. Tell the agent your first sale above.
-            </p>
+            <EmptyState art="book">Nothing recorded yet. Tell the agent your first sale above.</EmptyState>
           )}
         </section>
 
@@ -122,9 +121,9 @@ export default function ShopToday() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">
+              <EmptyState art="phone" className="py-5">
                 No reminders waiting. The agent drafts them; you approve and send from WhatsApp.
-              </p>
+              </EmptyState>
             )}
             <button
               type="button"
