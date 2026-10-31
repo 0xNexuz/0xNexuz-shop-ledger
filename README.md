@@ -62,7 +62,16 @@ pnpm dev              # open the printed URL, sign in, choose "Open the sample s
 
 Connect an AI provider in the app's settings ("Use Builder.io" or a personal Anthropic/OpenAI/OpenRouter key) to talk to the agent. The ledger, screens and rules work without one.
 
-For production, set `DATABASE_URL` to a hosted Postgres (pooled URL) and deploy with `pnpm build` on any Nitro host.
+### Deploy (Vercel + Neon)
+
+`vercel.json` makes a Git-connected Vercel project build with the Vercel preset and run `pnpm migrate:production` on production deploys.
+
+1. Import the GitHub repo into Vercel (framework: Other; the settings in `vercel.json` apply).
+2. Vercel → Storage → add **Neon** (free) and connect it to the project; it sets `DATABASE_URL`.
+3. Add environment variables: `BETTER_AUTH_SECRET` and `CRON_SECRET` (each `openssl rand -hex 32`), and `AGENT_NATIVE_RELEASE_MIGRATIONS=1`.
+4. Deploy, open the URL, create the first account, then connect an AI provider in Settings.
+
+The scheduler sweep runs once a day at 18:00 UTC (7pm Lagos), which Vercel's free plan allows. On Pro, set `AGENT_NATIVE_VERCEL_CRON_SCHEDULE="* * * * *"` for minute-level automations.
 
 ## Pre-existing work and what was built during the hackathon
 

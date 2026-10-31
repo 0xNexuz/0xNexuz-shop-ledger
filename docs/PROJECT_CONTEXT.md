@@ -58,7 +58,7 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **P2 priorities:** Telegram/Dispatch entry; CSV export; i18n of new UI strings
 - **P3 priorities:** polish (formatted promise dates in summaries)
 - **Current milestone:** P1 hosting
-- **Known blockers:** GitHub repo owner/name; AI key choice; Supabase project creation may need cost confirmation
+- **Known blockers:** GitHub repo `0xNexuz/shop-ledger` must be created by the owner (this session can't create repos); Neon must be added from the Vercel dashboard (terms acceptance); AI key choice
 
 ## Verification
 
@@ -105,9 +105,17 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Impact:** recovery rules live here
 - **Status:** APPROVED
 
+### 2026-10-31 — Hosting: public GitHub repo, Neon Postgres, Vercel
+- **Decision:** public repo 0xNexuz/shop-ledger; free Neon Postgres via Vercel Marketplace; deploy to Vercel team "xreyy's projects"
+- **Reason:** Supabase org already at 2 active free projects (EduCraft, Forge); public code helps judging
+- **Alternatives considered:** new paid Supabase project; holding the deploy
+- **Evidence:** Supabase org listing; `NITRO_PRESET=vercel` build succeeded locally with a daily `0 18 * * *` cron (Hobby-compatible)
+- **Impact:** `vercel.json` added; Builder.io analytics IDs removed from the starter's netlify.toml
+- **Status:** APPROVED
+
 ## Next Action
 
-- **Next recommended action:** create the GitHub repo and push; then Supabase Postgres + Vercel deploy; connect an AI provider and run the agent flows
+- **Next recommended action:** owner creates the empty repo; push; import into Vercel; add Neon + secrets; deploy; connect an AI provider and run the agent flows
 - **Next authorized action:** hosting setup was approved in principle; needs repo owner/name, and confirmation of any cost
 - **Next approved milestone:** P1 hosting
 - **Approval boundary:** pushing to a named repo, creating paid resources, deploying publicly, and submitting all need explicit go-ahead
