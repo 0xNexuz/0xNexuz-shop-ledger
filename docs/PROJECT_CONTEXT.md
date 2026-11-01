@@ -8,8 +8,8 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Repository:** https://github.com/0xNexuz/0xNexuz-shop-ledger (public); Vercel project `shop-ledger` (team xreyy's projects), Git-linked, production branch `main`
 - **Project description:** Agent-native bookkeeping for small shops: say what happened, the agent records sales, credit, payments and stock through shared actions; the owner approves debtor reminders and sends them from WhatsApp.
 - **Current workflow stage:** DEPLOYMENT (P1) → next: AI provider, agent-flow verification, Clips demo, submission
-- **Overall status:** IMPLEMENTED; core ledger, rules and screens VERIFIED locally; agent conversation UNVERIFIED (no AI key in the build environment)
-- **Last updated date:** 2026-10-31
+- **Overall status:** IMPLEMENTED; core ledger, rules and screens verified locally on 2026-10-31; a live demo agent run failed on 2026-11-01 and needs production diagnosis
+- **Last updated date:** 2026-11-01
 
 ## Git State
 
@@ -58,7 +58,7 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **P2 priorities:** demo-account clean-up job; email verification + password reset once an email provider is added; i18n of new UI strings
 - **P3 priorities:** hide the starter Home link; favicon.ico; README screenshots
 - **Current milestone:** P1 live agent check
-- **Known blockers:** Gemini free tier sometimes answers 503 "high demand" (retry); some Nigerian networks reset connections to vercel.app
+- **Known blockers:** A live demo "How did we do today?" run on 2026-11-01 ended with "The server reported that this run failed" and a "Save failed" toast. Root cause is unconfirmed; inspect production runtime logs and verify a complete agent run before the Clips recording. Some Nigerian networks reset connections to vercel.app.
 
 ## Verification
 
@@ -84,6 +84,12 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Unverified claims:** agent conversation quality and tool choice; scheduled automation; hosted deploy
 
 ## Decision Log
+
+### 2026-11-01 — Read-only daily questions and live agent failure
+- **Decision:** Route daily sales questions to `get-shop-overview` and book checks to `reconcile-ledger`; reserve `close-the-day` for explicit close requests. Make both quick asks name their read-only action. Replace the starter SEO title and description.
+- **Reason:** The prior prompt mapped "how did today go" to a write action. A live sample-shop run failed, so agent behavior is not yet proven on production.
+- **Evidence:** Live browser demo showed the failed run and save toast; source review found the prompt mapping. The prompt and metadata edits have not been deployed or retested.
+- **Status:** IMPLEMENTED in a local source snapshot; UNVERIFIED in production
 
 ### 2026-10-31 — Build Shop Ledger with FutureUni theme
 - **Decision:** Build idea #1; theme with the FutureUni design system

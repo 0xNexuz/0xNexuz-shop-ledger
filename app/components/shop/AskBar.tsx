@@ -79,8 +79,8 @@ function useDictation(onText: (text: string) => void) {
 
 // Two shortcuts beside the camera: the rest of Today already shows reminders and low stock.
 const QUICK_ASKS = [
-  { label: "How did we do today?", prompt: "How did the shop do today? Give me sales, cash in, credit given and anything I should act on." },
-  { label: "Check my books", prompt: "Check that my books balance: stock and every customer's balance against the entries." },
+  { label: "How did we do today?", prompt: "Use get-shop-overview to tell me today's sales, cash in, credit given and anything I should act on. Do not close the day." },
+  { label: "Check my books", prompt: "Use reconcile-ledger to check stock and every customer's balance against the entries. Do not change the books." },
 ];
 
 /** The shop's front door: say what happened in plain words and the agent records it. */
