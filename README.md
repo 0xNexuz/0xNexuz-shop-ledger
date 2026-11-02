@@ -4,27 +4,34 @@
 
 **Live app: [shop-ledger-peach.vercel.app](https://shop-ledger-peach.vercel.app)** (tap **Try the demo**: a private sample shop opens in seconds, no sign-up)
 
+**Demo video: [Shop Ledger walkthrough on Clips](https://clips.agent-native.com/share/aMVt1nptuM2K)**
+
 ![Shop Ledger welcome screen](docs/screenshots/welcome.png)
 
 Millions of shops in Nigeria and across Africa still keep sales, stock and "who owes what" in an exercise book. Credit ("put it on my account") is how many customers buy, and chasing it is awkward and easy to forget. Shop Ledger lets the owner say what happened, the way they would say it:
 
 > "I sell 2 bag rice give Mama Ngozi, she pay 50k, remain go come Friday."
 
-The agent can record the sale, take the bags out of stock, and put the unpaid balance on Mama Ngozi's account with Friday as the promised day. The Today screen then updates. Money and stock rules are enforced by the server; reminder drafts and typed old-balance imports need the owner's approval.
+The agent records the sale, takes the bags out of stock, and puts the unpaid balance on Mama Ngozi's account with Friday as the promised day. The Today screen updates as it writes. Money and stock rules are enforced by the server, and nothing leaves the shop (a reminder) or enters the books from the old notebook until the owner approves it.
+
+![Today: the ask bar, today's figures read straight from the books, the evening close and the daybook](docs/screenshots/today.png)
 
 ## What it does
 
 | Feature | What happens |
 | --- | --- |
-| **Talk like you talk** | Type or speak in English, Nigerian Pidgin, Yoruba, Hausa or Igbo ("bashi", "gbese", "e don pay", "5k"). The agent records sales, payments, restocks and stock counts, and replies in the same language. |
-| **Bring in old balances** | Type old debts or stock counts to the agent. It proposes entries for the owner to review and add from Today. |
+| **Talk like you talk** | Type or speak in English, Nigerian Pidgin, Yoruba, Hausa or Igbo ("bashi", "gbese", "e don pay", "5k"). The agent records sales and payments, answers questions about the day, credit and the books, and replies in the same language. If the agent can't finish, the owner's words stay in the box with a link to enter the sale by hand. |
+| **Bring in old balances** | Type old debts or stock counts from the paper notebook to the agent. It proposes entries; they wait on Today until the owner ticks them and taps **Add**. |
 | **Credit sense** | Before more credit goes out, the server checks the customer's own history: what they owe, how late they are, the most they've owed and paid back. A late payer or a sale over their limit is stopped with the reason, and goes through only when the owner says so. |
 | **Evening close** | At 7 pm Lagos the day closes by itself: totals, who is late, and a WhatsApp reminder **draft** for each late payer. The owner can also close the day from Today or by asking. |
 | **Learns your shop** | "Mama Pikin na Mama Ngozi", "one bag is the rice". Nicknames are saved and understood by every action afterwards. A nickname can belong to one customer or product only. |
 | **Reminders the owner sends** | The agent drafts; only the owner can approve, and approving opens WhatsApp with the message ready to send from their own phone. |
+| **Quick checks** | **How did we do today?** and **Check my books** read the books directly (`get-shop-overview`, `reconcile-ledger`), so they answer instantly even when the AI model is slow. |
 | **Everything by hand too** | New sale, payments, restock, stock counts, voids, customers and products all have screens. Each entry shows who made it: you, the agent, the nightly job or sample data. |
 
-![Credit check in the sale dialog](docs/screenshots/credit-check.png)
+| Credit check before a sale | A customer's account and credit standing |
+| --- | --- |
+| ![Credit check in the sale dialog](docs/screenshots/credit-check.png) | ![Customer page with credit standing and a nickname](docs/screenshots/customer.png) |
 
 ## How it uses Agent-Native
 
@@ -33,13 +40,13 @@ The agent can record the sale, take the bags out of stock, and put the unpaid ba
 | Actions as the single source of truth | 31 shop actions (`actions/*.ts`), defined once. The screens call them through the client hooks, the agent calls them as tools, and the CLI runs them (`pnpm action …`). `scripts/verify-rules.sh` proves the rules through the CLI. |
 | Rules in actions, typed errors | `insufficient_stock`, `credit_needs_customer`, `overpayment`, `credit_check`, `nickname_taken`, `void_conflict`… The agent reads the error and explains it with the real figure instead of retrying with invented numbers. |
 | Owner-only actions (`uiOnly`) | `approve-reminder`, `mark-reminder-sent` and `apply-notebook-import` run only for a signed-in person in the app. The agent, MCP clients, the CLI and raw HTTP get `403 ui_capability_required`. |
-| Agent chat plugin | A system prompt covering the books' rules, credit sense, typed old balances, five languages, the evening close and nicknames, plus 16 tools loaded from the start. |
+| Agent chat plugin | A short bookkeeping prompt (rules, credit sense, typed old balances, five languages, the evening close, nicknames) and a focused set of eight shop tools: `get-shop-overview`, `record-sale`, `record-payment`, `reconcile-ledger`, `get-credit-standing`, `close-the-day`, `propose-notebook-import`, `add-nickname`. Tool results are capped at 1,800 characters so a whole turn fits Groq's free tier (8,000 tokens a minute). |
 | UI → agent hand-off (`sendToAgentChat`) | The ask bar, voice input, and "Ask the agent" links. The two Today quick checks call their read-only actions directly. |
-| Context awareness | Navigation state (`shopTab`, `customerId`), `view-screen` and `navigate`, so the agent knows what the owner is looking at and can move the screen. |
+| Live sync and context | `useDbSync` refreshes the screens while the agent writes. The shop screens publish their navigation state (`shopTab`, `customerId`) to the framework's application state. |
 | SQL, migrations, access control | Drizzle schema with additive migrations (v1–v3); `ownerEmail`/`orgId` columns with the framework's `accessFilter`, so each account sees only its own shop. `agent-native doctor` is clean (no unscoped queries, no credentials from env). |
 | Auth | Framework accounts. **Try the demo** uses the framework's own register and login endpoints to make a private throwaway account. |
 | Jobs | The evening close rides on the framework's daily sweep (Vercel Cron at 18:00 UTC, `CRON_SECRET` checked with `readDeployCredentialEnv`). |
-| Model choice | Supports configured providers, including Groq. The production provider and a complete agent run still need verification. |
+| Model choice | Groq `openai/gpt-oss-120b` (text and tool calls) through `AGENT_ENGINE=ai-sdk:groq` and `AGENT_MODEL`. Other providers the framework supports work the same way. |
 
 ## Rules the server enforces
 
@@ -57,14 +64,15 @@ These live in the actions, not in the prompt:
 
 ## Proof
 
-| Check | Command | Last result (Oct 31, 2026) |
+| Check | Command | Last result |
 | --- | --- | --- |
-| Unit tests: money, matching and nicknames, time, reminder machine | `pnpm exec vitest run` | 19/19 passed |
-| Ledger rules against a real database | `bash scripts/verify-rules.sh` (dev server running) | 31/31 passed |
-| Types | `pnpm typecheck` | clean |
-| Framework guards (scoping, credentials, migrations…) | `pnpm agent-native:doctor` | clean |
-| 7 pm hook | `curl` the sweep path with a wrong and a right cron secret | wrong → 401, nothing closed; right → 200, every active shop closed |
-| Browser (Playwright) | welcome card, demo, sale, credit warning, typed import review, evening close, nicknames, reminders, phone width | passed locally on Oct 31; raw HTTP approval refused with 403 |
+| Unit tests: money, matching and nicknames, time, reminder machine | `pnpm exec vitest run` | 19/19 passed (Oct 31) |
+| Ledger rules against a real database | `bash scripts/verify-rules.sh` (dev server running) | 31/31 passed (Oct 31) |
+| Types | `pnpm typecheck` | clean (Nov 2) |
+| Framework guards (scoping, credentials, migrations…) | `pnpm agent-native:doctor` | clean (Nov 2) |
+| 7 pm hook | `curl` the sweep path with a wrong and a right cron secret | wrong → 401, nothing closed; right → 200, every active shop closed (Oct 31) |
+| Browser (Playwright) | welcome card, demo, sale, credit warning, typed import review, evening close, nicknames, reminders, phone width | passed locally (Oct 31); raw HTTP approval refused with 403 |
+| Production agent | a sample shop asks for the day's overview on the live site | Groq called `get-shop-overview`, replied, no errors (Nov 2) |
 
 ## Real vs. not yet verified
 
@@ -74,7 +82,7 @@ These live in the actions, not in the prompt:
 | Screens and the demo entry | **Real**, verified in a headless browser; live at the link above |
 | Hosting | **Real**: Vercel (functions in `cle1`) + Neon Postgres |
 | WhatsApp hand-off | **Real** `wa.me` link with the text filled in; the owner sends it from WhatsApp |
-| The agent's conversations (local languages and tool choice) | A live run failed on Nov 1. A complete production agent run is not yet verified. |
+| The agent on the live site | **Real** on Groq: a production overview conversation completed on Nov 2, and the [demo video](https://clips.agent-native.com/share/aMVt1nptuM2K) shows the agent in use. Answers depend on the model; other agent flows have no automated production check. |
 | The 7 pm close on Vercel Cron | Configured; verified locally with the same request Vercel sends |
 
 ## Accounts
@@ -90,7 +98,7 @@ pnpm install          # if node-pty fails to build: npm_config_nodedir=$(dirname
 pnpm dev              # open the printed URL and tap "Try the demo"
 ```
 
-Set one AI key in `.env` (`GOOGLE_GENERATIVE_AI_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY` or `OPENROUTER_API_KEY`) to talk to the agent. The ledger, screens and rules work without one.
+To talk to the agent, copy `.env.example` to `.env` (it selects Groq and the model) and add `GROQ_API_KEY`. The ledger, screens, rules and quick checks work without a key.
 
 ### Deploy (Vercel + Neon)
 
@@ -98,7 +106,7 @@ Set one AI key in `.env` (`GOOGLE_GENERATIVE_AI_API_KEY`, `OPENAI_API_KEY`, `ANT
 
 1. Import the GitHub repo into Vercel (framework: Other).
 2. Vercel → Storage → add **Neon** and connect it; it sets `DATABASE_URL`.
-3. Add environment variables: `BETTER_AUTH_SECRET` and `CRON_SECRET` (each `openssl rand -hex 32`), `AGENT_NATIVE_RELEASE_MIGRATIONS=1`, and one AI key.
+3. Add environment variables: `BETTER_AUTH_SECRET` and `CRON_SECRET` (each `openssl rand -hex 32`), `AGENT_NATIVE_RELEASE_MIGRATIONS=1`, `AGENT_ENGINE=ai-sdk:groq`, `AGENT_MODEL=openai/gpt-oss-120b`, and `GROQ_API_KEY` (as a sensitive variable).
 4. Deploy and open the URL.
 
 The daily sweep (and the evening close) runs at 18:00 UTC, which Vercel's free plan allows.
@@ -108,16 +116,16 @@ The daily sweep (and the evening close) runs at 18:00 UTC, which Vercel's free p
 | Path | What |
 | --- | --- |
 | `actions/` | Every operation, shared by screens, agent and CLI |
-| `server/lib/` | Ledger, credit sense, notebook imports, evening close, nicknames, matching, money and time |
+| `server/lib/` | Ledger, credit sense, typed old-balance imports, evening close, nicknames, matching, money and time |
 | `server/plugins/` | Migrations, the agent's instructions and tools, branding |
 | `server/middleware/evening-close.ts` | The 7 pm hook on the framework's sweep |
 | `app/routes/shop*` and `app/components/shop/` | Today, Ledger, Customers, Stock and their parts |
 | `scripts/verify-rules.sh` | The 31 rule checks |
-| `docs/DEMO.md` | The demo script |
+| `docs/DEMO.md` | The demo script ([video](https://clips.agent-native.com/share/aMVt1nptuM2K)) |
 
 ## Pre-existing work and what was built during the hackathon
 
-- **Pre-existing:** the open-source [Agent-Native](https://github.com/BuilderIO/agent-native) Chat starter (`npx @agent-native/core create --template starter`): app shell, auth, agent chat, sidebar, UI primitives, and its `navigate`, `view-screen`, `run` and `provider-api-request` actions. The brand tokens and fonts (Space Grotesk, Poppins) come from Mag's own design system. Libraries are listed in `package.json`.
+- **Pre-existing:** the open-source [Agent-Native](https://github.com/BuilderIO/agent-native) Chat starter (`npx @agent-native/core create --template starter`): app shell, auth, agent chat, sidebar, UI primitives, and its `navigate`, `view-screen`, `run` and `provider-api-request` actions. The brand tokens come from Mag's own design system; the fonts (Space Grotesk, Poppins) are open source. Libraries are listed in `package.json` (React Router, Nitro, Drizzle ORM, Tailwind CSS, Zod, Tabler Icons, Sonner and others). Services: Vercel, Neon Postgres, Groq.
 - **Built during the event (from Oct 31, 2026):** everything under `server/db`, `server/lib`, `server/middleware/evening-close.ts`, `server/plugins/db.ts`, the 31 shop actions, `app/routes/shop*`, `app/components/shop/`, `app/components/brand/`, the logo, illustrations and sign-in page, the theme changes in `app/global.css`, the agent instructions, the sample data, the tests and `scripts/verify-rules.sh`. See the git history.
 
 All sample people, phone numbers and figures are invented.
