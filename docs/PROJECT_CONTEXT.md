@@ -8,7 +8,7 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Repository:** https://github.com/0xNexuz/0xNexuz-shop-ledger (public); Vercel project `shop-ledger` (team xreyy's projects), Git-linked, production branch `main`
 - **Project description:** Agent-native bookkeeping for small shops: say what happened, the agent records sales, credit, payments and stock through shared actions; the owner approves debtor reminders and sends them from WhatsApp.
 - **Current workflow stage:** DEPLOYMENT (P1) → next: AI provider, agent-flow verification, Clips demo, submission
-- **Overall status:** IMPLEMENTED; core ledger, rules and screens verified locally on 2026-10-31; a live demo agent run failed on 2026-11-01. Groq tool calling passed a direct provider check on 2026-11-02; production Groq variables were saved on 2026-11-02, but a complete agent run remains unverified.
+- **Overall status:** IMPLEMENTED; core ledger, rules and screens verified locally on 2026-10-31; a live demo agent run failed on 2026-11-01. Groq tool calling passed a direct provider check on 2026-11-02; production Groq variables were saved on 2026-11-02, but the initial production run failed because the first request exceeded Groq's 8,000 TPM limit; a focused action surface and 1,800-character tool results completed local daily-overview and close-day conversations. Production retest is pending.
 - **Last updated date:** 2026-11-02
 
 ## Git State
@@ -58,7 +58,7 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **P2 priorities:** demo-account clean-up job; email verification + password reset once an email provider is added; i18n of new UI strings
 - **P3 priorities:** hide the starter Home link; favicon.ico; README screenshots
 - **Current milestone:** P1 direct read-only checks, manual sale fallback and removal of notebook-photo capture merged; Groq production variables configured; live agent verification pending
-- **Known blockers:** A live demo "How did we do today?" run on 2026-11-01 ended with "The server reported that this run failed" and a "Save failed" toast. Root cause is unconfirmed; inspect production runtime logs and verify a complete agent run before the Clips recording. Some Nigerian networks reset connections to vercel.app.
+- **Known blockers:** Groq free-tier limit is 8,000 TPM. The original Agent-Native prompt and generic tools asked for ~16,360 tokens. A focused tool surface and bounded results passed local daily-overview and close-day runs; retest the deployed version before Clips. Some Nigerian networks reset connections to vercel.app. Some Nigerian networks reset connections to vercel.app.
 
 ## Verification
 
@@ -84,6 +84,12 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Unverified claims:** agent conversation quality and tool choice; scheduled automation; hosted deploy
 
 ## Decision Log
+
+### 2026-11-02 — Focus the Groq agent on shop actions
+- **Decision:** Expose eight shop actions to the chat agent, shorten its instruction, and cap tool results at 1,800 characters. The manual Stock screen handles restocks; the owner-only reminder controls remain in the UI.
+- **Reason:** The free-tier Groq limit is 8,000 TPM. The original first request sent 31 tools and Groq rejected ~16,360 tokens. Generic framework tools added cost and unrelated capabilities.
+- **Evidence:** Local server log captured Groq's 413 with limit and requested tokens. A synthetic sample shop completed `get-shop-overview` and `close-the-day` agent exchanges with final SSE `done` and no error codes after the change. Typecheck passed. Production retest pending.
+- **Status:** IMPLEMENTED locally
 
 ### 2026-11-02 — Text-only Groq agent and typed old-balance import
 - **Decision:** Remove notebook-photo capture and all claims that the agent reads images. Keep typed old-balance imports and owner review so existing drafts are not stranded. Use Groq `openai/gpt-oss-120b` for text and tool calls; the key remains outside Git.
