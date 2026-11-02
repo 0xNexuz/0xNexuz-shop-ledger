@@ -8,7 +8,7 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Repository:** https://github.com/0xNexuz/0xNexuz-shop-ledger (public); Vercel project `shop-ledger` (team xreyy's projects), Git-linked, production branch `main`
 - **Project description:** Agent-native bookkeeping for small shops: say what happened, the agent records sales, credit, payments and stock through shared actions; the owner approves debtor reminders and sends them from WhatsApp.
 - **Current workflow stage:** DEPLOYMENT (P1) → next: AI provider, agent-flow verification, Clips demo, submission
-- **Overall status:** IMPLEMENTED; core ledger, rules and screens verified locally on 2026-10-31; a live demo agent run failed on 2026-11-01. Groq tool calling passed a direct provider check on 2026-11-02; production Groq variables were saved on 2026-11-02, but the initial production run failed because the first request exceeded Groq's 8,000 TPM limit; a focused action surface and 1,800-character tool results completed local daily-overview and close-day conversations. Production retest is pending.
+- **Overall status:** IMPLEMENTED; core ledger, rules and screens verified locally on 2026-10-31; a live demo agent run failed on 2026-11-01. Groq tool calling passed a direct provider check on 2026-11-02; production Groq variables were saved on 2026-11-02, but the initial production run failed because the first request exceeded Groq's 8,000 TPM limit; a focused action surface and 1,800-character tool results completed local daily-overview and close-day conversations. A production synthetic sample shop completed a read-only `get-shop-overview` conversation with a tool result, reply text, SSE `done`, and no error codes on 2026-11-02.
 - **Last updated date:** 2026-11-02
 
 ## Git State
@@ -51,14 +51,14 @@ Keep this file concise and evidence-based. Update current state in place, append
 
 - **Approved implementation scope:** P0 build of Shop Ledger + hosting on GitHub/Vercel/Neon Postgres (approved 2026-10-31; Supabase is not used); four agent features chosen by the owner 2026-10-31: snap the notebook, talk like you talk, credit sense, evening close + nicknames
 - **Completed features:** schema/migrations (v1–v3); 35 actions; ledger rules; reminders state machine; Today/Ledger/Customers/Stock screens; sale dialog with credit warning; onboarding + sample shop; agent prompt, tools, navigation state; UI-only approval; brand refresh (logo, preloader, sign-in); one-tap demo + welcome card; typed old-balance import drafts (owner applies); voice/dictation + local-language prompt; credit sense (status, limits, credit_check on sales); evening close (7 pm via Vercel cron + button + agent tool); nicknames for customers and products
-- **Implemented but unverified:** the production agent (Pidgin/Yoruba/Hausa/Igbo understanding, add-nickname/close-the-day tool choice); the 7 pm Vercel cron firing in production
+- **Implemented but unverified:** production agent sale and multilingual behavior (local overview and close-day passed; live overview passed); the 7 pm Vercel cron firing in production
 - **Pending features:** Clips demo; submission text; optional "Keep this shop" (demo → real account); optional Telegram entry; CSV export
 - **P0 priorities:** none open
 - **P1 priorities:** configure and test the live agent with Groq; record Clips demo; submit by Sun Nov 8
 - **P2 priorities:** demo-account clean-up job; email verification + password reset once an email provider is added; i18n of new UI strings
 - **P3 priorities:** hide the starter Home link; favicon.ico; README screenshots
-- **Current milestone:** P1 direct read-only checks, manual sale fallback and removal of notebook-photo capture merged; Groq production variables configured; live agent verification pending
-- **Known blockers:** Groq free-tier limit is 8,000 TPM. The original Agent-Native prompt and generic tools asked for ~16,360 tokens. A focused tool surface and bounded results passed local daily-overview and close-day runs; retest the deployed version before Clips. Some Nigerian networks reset connections to vercel.app. Some Nigerian networks reset connections to vercel.app.
+- **Current milestone:** P1 fallback and photo removal merged; Groq configured; production daily-overview agent conversation completed
+- **Known blockers:** Groq free-tier limit is 8,000 TPM. The original Agent-Native prompt and generic tools asked for ~16,360 tokens. A focused tool surface and bounded results passed local daily-overview and close-day runs, and a production daily-overview run completed. Sale and multilingual agent flows still need live verification before Clips. Some Nigerian networks reset connections to vercel.app.
 
 ## Verification
 
@@ -66,6 +66,7 @@ Keep this file concise and evidence-based. Update current state in place, append
 
 | Date | Command or check | Environment | Result | Evidence or notes |
 |---|---|---|---|---|
+| 2026-11-02 | Synthetic sample-shop agent SSE | production | VERIFIED daily overview | Groq selected from Vercel env; `get-shop-overview` tool result, reply text, final `done`, no error codes |
 | 2026-10-31 | `pnpm exec vitest --run` | workspace, Node 22 | VERIFIED 18/18 | money, matching, time/DST, reminder machine, phone/wa.me |
 | 2026-10-31 | `bash scripts/verify-rules.sh` | dev server + PGlite | VERIFIED 18/18 | stock, credit, overpayment, voids, counts, reminders, uiOnly, reconcile |
 | 2026-10-31 | `pnpm typecheck` | workspace | VERIFIED clean | |
@@ -88,8 +89,8 @@ Keep this file concise and evidence-based. Update current state in place, append
 ### 2026-11-02 — Focus the Groq agent on shop actions
 - **Decision:** Expose eight shop actions to the chat agent, shorten its instruction, and cap tool results at 1,800 characters. The manual Stock screen handles restocks; the owner-only reminder controls remain in the UI.
 - **Reason:** The free-tier Groq limit is 8,000 TPM. The original first request sent 31 tools and Groq rejected ~16,360 tokens. Generic framework tools added cost and unrelated capabilities.
-- **Evidence:** Local server log captured Groq's 413 with limit and requested tokens. A synthetic sample shop completed `get-shop-overview` and `close-the-day` agent exchanges with final SSE `done` and no error codes after the change. Typecheck passed. Production retest pending.
-- **Status:** IMPLEMENTED locally
+- **Evidence:** Local server log captured Groq's 413 with limit and requested tokens. A synthetic sample shop completed `get-shop-overview` and `close-the-day` agent exchanges with final SSE `done` and no error codes after the change. Typecheck passed. Production daily-overview run passed; other agent flows pending.
+- **Status:** DEPLOYED; production daily overview VERIFIED
 
 ### 2026-11-02 — Text-only Groq agent and typed old-balance import
 - **Decision:** Remove notebook-photo capture and all claims that the agent reads images. Keep typed old-balance imports and owner review so existing drafts are not stranded. Use Groq `openai/gpt-oss-120b` for text and tool calls; the key remains outside Git.
@@ -178,3 +179,4 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Next authorized action:** pushes to `main` (owner said "push deploy whats needed")
 - **Next approved milestone:** submission by Sun Nov 8 (deadline Tue Nov 10 08:59 Lagos)
 - **Approval boundary:** submitting, paid resources and anything public beyond the existing deploy need explicit go-ahead
+
