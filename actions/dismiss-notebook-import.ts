@@ -8,7 +8,7 @@ import { requireActor, requireShop } from "../server/lib/shop.js";
 const errors = defineActionErrors("not_found", "no_shop");
 
 export default defineAction({
-  description: "Discard a notebook import that is waiting for review (for example, the photo was misread). Nothing in the books changes.",
+  description: "Discard an old-balance import that is waiting for review. Nothing in the books changes.",
   schema: z.object({ shopId: shopIdArg, id: z.string().min(1).describe("Import id") }),
   outputSchema: z.object({ ok: z.literal(true) }),
   errors,

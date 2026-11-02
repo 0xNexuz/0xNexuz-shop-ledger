@@ -9,13 +9,13 @@ const errors = defineActionErrors("empty_import", "invalid_amount", "no_shop");
 
 export default defineAction({
   description:
-    "Propose bringing the owner's paper notebook into the books, after you have read a photo of a page (or a typed list): customers with what they owe (and any promised date), and products with the stock counted. It is saved as a draft for the owner to review on the Today screen; NOTHING changes in the books until the owner taps Add there. Copy only what is legible. Leave out any line whose name or amount you can't read clearly and tell the owner which ones.",
+    "Propose bringing typed old balances and stock counts into the books: customers with what they owe (and any promised date), and products with the stock counted. It is saved as a draft for the owner to review on the Today screen; NOTHING changes in the books until the owner taps Add there. Ask about any unclear name or amount instead of guessing.",
   schema: z.object({
     shopId: shopIdArg,
     customers: importPayload.shape.customers.describe("People who owe money, one per line in the notebook"),
     products: importPayload.shape.products.describe("Stock on hand, one per product"),
-    source: z.string().max(60).default("notebook photo").describe('Where it came from, e.g. "notebook photo" or "typed list"'),
-    note: z.string().max(280).optional().describe("Anything the owner should know, e.g. lines you couldn't read"),
+    source: z.string().max(60).default("typed list").describe('Where it came from, e.g. "typed list"'),
+    note: z.string().max(280).optional().describe("Anything the owner should know about the proposed entries"),
   }),
   outputSchema: importOut.extend({ message: z.string() }),
   errors,

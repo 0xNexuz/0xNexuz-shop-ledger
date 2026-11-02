@@ -1,10 +1,18 @@
-import { IconMicrophone, IconPlayerStopFilled, IconSend2 } from "@tabler/icons-react";
+import {
+  actionErrorMessage,
+  useActionQuery,
+} from "@agent-native/core/client/hooks";
+import {
+  IconMicrophone,
+  IconPlayerStopFilled,
+  IconSend2,
+  IconX,
+} from "@tabler/icons-react";
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 
-import { askAgent } from "./format";
-import { SnapNotebookButton } from "./NotebookImport";
+import { askAgent, money } from "./format";
 
 /** Say it the way you'd say it: English, Pidgin, Yoruba, Hausa or Igbo. */
 const EXAMPLES = [
@@ -20,7 +28,14 @@ type Recognition = {
   lang: string;
   interimResults: boolean;
   continuous: boolean;
-  onresult: ((event: { resultIndex: number; results: ArrayLike<ArrayLike<{ transcript: string }> & { isFinal: boolean }> }) => void) | null;
+  onresult:
+    | ((event: {
+        resultIndex: number;
+        results: ArrayLike<
+          ArrayLike<{ transcript: string }> & { isFinal: boolean }
+        >;
+      }) => void)
+    | null;
   onerror: ((event: { error: string }) => void) | null;
   onend: (() => void) | null;
   start: () => void;
@@ -29,7 +44,10 @@ type Recognition = {
 
 function speechRecognition(): (new () => Recognition) | null {
   if (typeof window === "undefined") return null;
-  const w = window as unknown as { SpeechRecognition?: new () => Recognition; webkitSpeechRecognition?: new () => Recognition };
+  const w = window as unknown as {
+    SpeechRecognition?: new () => Recognition;
+    webkitSpeechRecognition?: new () => Recognition;
+  };
   return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
 }
 
@@ -77,21 +95,36 @@ function useDictation(onText: (text: string) => void) {
   return { supported, listening, start, stop };
 }
 
-// Two shortcuts beside the camera: the rest of Today already shows reminders and low stock.
-const QUICK_ASKS = [
-  { label: "How did we do today?", prompt: "Use get-shop-overview to tell me today's sales, cash in, credit given and anything I should act on. Do not close the day." },
-  { label: "Check my books", prompt: "Use reconcile-ledger to check stock and every customer's balance against the entries. Do not change the books." },
-];
-
 /** The shop's front door: say what happened in plain words and the agent records it. */
-export function AskBar() {
+export function AskBar({
+  currency,
+  onManualSale,
+}: {
+  currency: string;
+  onManualSale: () => void;
+}) {
   const [text, setText] = useState("");
+  const [submittedText, setSubmittedText] = useState("");
+  const [view, setView] = useState<"summary" | "books" | null>(null);
+  const summary = useActionQuery(
+    "get-shop-overview",
+    {},
+    { enabled: view === "summary" },
+  );
+  const books = useActionQuery(
+    "reconcile-ledger",
+    {},
+    { enabled: view === "books" },
+  );
   const [exampleIndex, setExampleIndex] = useState(0);
   const example = EXAMPLES[exampleIndex] ?? EXAMPLES[0];
   const dictation = useDictation(setText);
   // Rotate the hint so owners see they can write in their own language.
   useEffect(() => {
-    const timer = window.setInterval(() => setExampleIndex((i) => (i + 1) % EXAMPLES.length), 4000);
+    const timer = window.setInterval(
+      () => setExampleIndex((i) => (i + 1) % EXAMPLES.length),
+      4000,
+    );
     return () => window.clearInterval(timer);
   }, []);
 
@@ -100,7 +133,7 @@ export function AskBar() {
     const message = text.trim();
     if (!message) return;
     askAgent(message);
-    setText("");
+    setSubmittedText(message);
   }
 
   return (
@@ -110,13 +143,21 @@ export function AskBar() {
         className="brand-corner flex items-center gap-2 rounded-lg border-2 border-foreground bg-card p-1.5 pl-4 shadow-[4px_4px_0_0_hsl(var(--brand-violet))] focus-within:shadow-[6px_6px_0_0_hsl(var(--brand-violet))] transition-shadow"
       >
         <label id="ask-heading" htmlFor="ask-input" className="sr-only">
-          Tell the shop agent what happened, in English, Pidgin, Yoruba, Hausa or Igbo
+          Tell the shop agent what happened, in English, Pidgin, Yoruba, Hausa
+          or Igbo
         </label>
         <input
           id="ask-input"
           value={text}
-          onChange={(event) => setText(event.target.value)}
-          placeholder={dictation.listening ? "Listening… say what happened" : `e.g. "${example}"`}
+          onChange={(event) => {
+            setText(event.target.value);
+            setSubmittedText("");
+          }}
+          placeholder={
+            dictation.listening
+              ? "Listening… say what happened"
+              : `e.g. "${example}"`
+          }
           autoComplete="off"
           className="min-w-0 flex-1 bg-transparent py-2 text-[15px] outline-none placeholder:text-muted-foreground"
         />
@@ -125,32 +166,149 @@ export function AskBar() {
             type="button"
             variant={dictation.listening ? "destructive" : "ghost"}
             size="icon"
-            aria-label={dictation.listening ? "Stop listening" : "Say it instead of typing"}
+            aria-label={
+              dictation.listening
+                ? "Stop listening"
+                : "Say it instead of typing"
+            }
             aria-pressed={dictation.listening}
-            onClick={() => (dictation.listening ? dictation.stop() : dictation.start())}
+            onClick={() =>
+              dictation.listening ? dictation.stop() : dictation.start()
+            }
             className="shrink-0 rounded-md"
           >
-            {dictation.listening ? <IconPlayerStopFilled className="size-4" /> : <IconMicrophone className="size-4" />}
+            {dictation.listening ? (
+              <IconPlayerStopFilled className="size-4" />
+            ) : (
+              <IconMicrophone className="size-4" />
+            )}
           </Button>
         ) : null}
-        <Button type="submit" disabled={!text.trim()} className="gap-1.5 rounded-md">
+        <Button
+          type="submit"
+          disabled={!text.trim() || text.trim() === submittedText}
+          className="gap-1.5 rounded-md"
+        >
           <IconSend2 className="size-4" />
           <span className="hidden sm:inline">Record</span>
         </Button>
       </form>
-      <div className="no-scrollbar -mx-4 flex items-center gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
-        <SnapNotebookButton className="shrink-0 whitespace-nowrap" />
-        {QUICK_ASKS.map((ask) => (
+      {submittedText ? (
+        <div
+          className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground"
+          role="status"
+        >
+          <span>Your words stay here if the agent cannot finish.</span>
           <button
-            key={ask.label}
             type="button"
-            onClick={() => askAgent(ask.prompt)}
-            className="shrink-0 whitespace-nowrap rounded-full border border-input px-3 py-1 text-xs font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            onClick={onManualSale}
+            className="font-medium text-brand-blue underline underline-offset-2"
           >
-            {ask.label}
+            Enter sale manually
           </button>
-        ))}
+        </div>
+      ) : null}
+      <div className="no-scrollbar -mx-4 flex items-center gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
+        <button
+          type="button"
+          onClick={() => setView("summary")}
+          className="shrink-0 whitespace-nowrap rounded-full border border-input px-3 py-1 text-xs font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          How did we do today?
+        </button>
+        <button
+          type="button"
+          onClick={() => setView("books")}
+          className="shrink-0 whitespace-nowrap rounded-full border border-input px-3 py-1 text-xs font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          Check my books
+        </button>
       </div>
+      {view ? (
+        <section
+          aria-live="polite"
+          className="rounded-lg border border-border bg-card p-3 text-sm"
+        >
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <h2 className="font-display font-semibold">
+              {view === "summary" ? "Today at a glance" : "Books check"}
+            </h2>
+            <button
+              type="button"
+              onClick={() => setView(null)}
+              aria-label="Close result"
+              className="rounded p-1 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <IconX className="size-4" />
+            </button>
+          </div>
+          {view === "summary" ? (
+            summary.isPending ? (
+              <p>Checking today's figures…</p>
+            ) : summary.error ? (
+              <p role="alert">
+                {actionErrorMessage(summary.error) ??
+                  "Couldn't load today's figures."}
+              </p>
+            ) : summary.data ? (
+              <div className="space-y-1">
+                <p>
+                  {money(summary.data.sales.total, currency)} in sales from{" "}
+                  {summary.data.sales.count}{" "}
+                  {summary.data.sales.count === 1 ? "sale" : "sales"}.
+                </p>
+                <p>
+                  Cash in {money(summary.data.cashIn, currency)} · Credit given{" "}
+                  {money(summary.data.sales.creditGiven, currency)} · Debts paid{" "}
+                  {money(summary.data.paymentsReceived, currency)}.
+                </p>
+                <p>
+                  {money(summary.data.outstanding.total, currency)} owed by{" "}
+                  {summary.data.outstanding.debtors}{" "}
+                  {summary.data.outstanding.debtors === 1
+                    ? "customer"
+                    : "customers"}
+                  {summary.data.lowStock.length
+                    ? ` · ${summary.data.lowStock.length} product${summary.data.lowStock.length === 1 ? "" : "s"} running low`
+                    : ""}
+                  .
+                </p>
+              </div>
+            ) : null
+          ) : books.isPending ? (
+            <p>Checking stock and balances…</p>
+          ) : books.error ? (
+            <p role="alert">
+              {actionErrorMessage(books.error) ?? "Couldn't check the books."}
+            </p>
+          ) : books.data ? (
+            books.data.ok ? (
+              <p>
+                Books balance. Checked {books.data.productsChecked} products and{" "}
+                {books.data.customersChecked} customers against the entries.
+              </p>
+            ) : (
+              <div>
+                <p className="font-medium text-destructive">
+                  {books.data.mismatches.length}{" "}
+                  {books.data.mismatches.length === 1
+                    ? "mismatch"
+                    : "mismatches"}{" "}
+                  found.
+                </p>
+                <ul className="mt-1 list-inside list-disc">
+                  {books.data.mismatches.map((item) => (
+                    <li key={`${item.kind}:${item.id}`}>
+                      {item.name}: saved {item.cached}, entries{" "}
+                      {item.fromEntries}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )
+          ) : null}
+        </section>
+      ) : null}
     </section>
   );
 }

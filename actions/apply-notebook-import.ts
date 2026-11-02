@@ -9,7 +9,7 @@ const errors = defineActionErrors("not_found", "invalid_transition", "empty_impo
 
 export default defineAction({
   description:
-    "Owner adds the ticked lines of a notebook import to the books: opening balances for customers, stock counts or new products. Owner-only: hidden from the agent.",
+    "Owner adds the ticked lines of a typed import to the books: opening balances for customers, stock counts or new products. Owner-only: hidden from the agent.",
   schema: z.object({
     shopId: shopIdArg,
     id: z.string().min(1).describe("Import id"),

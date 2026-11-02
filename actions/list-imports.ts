@@ -6,7 +6,7 @@ import { importOut, listImports } from "../server/lib/imports.js";
 import { requireShop } from "../server/lib/shop.js";
 
 export default defineAction({
-  description: "Notebook imports waiting for the owner's review (or all recent ones).",
+  description: "Typed old-balance imports waiting for the owner's review (or all recent ones).",
   schema: z.object({
     shopId: shopIdArg,
     status: z.enum(["draft", "all"]).default("draft"),
