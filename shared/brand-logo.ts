@@ -43,7 +43,7 @@ export function logoLockupSvg(className = ""): string {
 </svg>`;
 }
 
-/** The tile, 256 square, with the FutureUni corner (small, small, big top right). */
+/** The tile, 256 square, with the Mag corner (small, small, big top right). */
 const TILE =
   "M0 32 Q0 0 32 0 L160 0 Q256 0 256 96 L256 224 Q256 256 224 256 L32 256 Q0 256 0 224 Z";
 
@@ -100,7 +100,7 @@ export function brandLockupFileSvg(onDark: boolean): string {
 }
 
 /**
- * Logo colours and animation. Plain CSS with literal FutureUni colours so it
+ * Logo colours and animation. Plain CSS with literal Mag colours so it
  * also works on the standalone sign-in page. Every animation sits behind
  * prefers-reduced-motion, so the still logo is always the default.
  */

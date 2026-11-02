@@ -9,7 +9,7 @@
 @source "./**/*.{ts,tsx}";
 
 :root {
-  /* FutureUni design system: navy #000B39, white, pastel pink #FAD8FE,
+  /* Mag design system: navy #000B39, white, pastel pink #FAD8FE,
      blue #0050A5, violet #6C63E1 (never a text colour). */
   --background: 0 0% 100%;
   --foreground: 229 100% 11%;
@@ -302,7 +302,7 @@
   background: hsl(var(--muted-foreground) / 0.34);
 }
 
-/* FutureUni signature: one generous top-right corner on brand blocks. */
+/* Mag signature: one generous top-right corner on brand blocks. */
 .brand-corner {
   border-top-right-radius: 24px;
 }

@@ -1,6 +1,6 @@
 # Shop Ledger
 
-**A small shop's books, kept by talking.** Built by FUTUREUNI for the [Builder.io Agent-Native Hackathon](https://www.builder.io/hackathon) (Oct 27 – Nov 9, 2026).
+**A small shop's books, kept by talking.** Built by Mag for the [Builder.io Agent-Native Hackathon](https://www.builder.io/hackathon) (Oct 27 – Nov 9, 2026).
 
 **Live app: [shop-ledger-peach.vercel.app](https://shop-ledger-peach.vercel.app)** (tap **Try the demo**: a private sample shop opens in seconds, no sign-up)
 
@@ -117,7 +117,7 @@ The daily sweep (and the evening close) runs at 18:00 UTC, which Vercel's free p
 
 ## Pre-existing work and what was built during the hackathon
 
-- **Pre-existing:** the open-source [Agent-Native](https://github.com/BuilderIO/agent-native) Chat starter (`npx @agent-native/core create --template starter`): app shell, auth, agent chat, sidebar, UI primitives, and its `navigate`, `view-screen`, `run` and `provider-api-request` actions. The FUTUREUNI brand tokens and fonts (Space Grotesk, Poppins) are FUTUREUNI's own design system. Libraries are listed in `package.json`.
+- **Pre-existing:** the open-source [Agent-Native](https://github.com/BuilderIO/agent-native) Chat starter (`npx @agent-native/core create --template starter`): app shell, auth, agent chat, sidebar, UI primitives, and its `navigate`, `view-screen`, `run` and `provider-api-request` actions. The brand tokens and fonts (Space Grotesk, Poppins) come from Mag's own design system. Libraries are listed in `package.json`.
 - **Built during the event (from Oct 31, 2026):** everything under `server/db`, `server/lib`, `server/middleware/evening-close.ts`, `server/plugins/db.ts`, the 31 shop actions, `app/routes/shop*`, `app/components/shop/`, `app/components/brand/`, the logo, illustrations and sign-in page, the theme changes in `app/global.css`, the agent instructions, the sample data, the tests and `scripts/verify-rules.sh`. See the git history.
 
 All sample people, phone numbers and figures are invented.

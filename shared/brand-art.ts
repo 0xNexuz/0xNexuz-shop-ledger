@@ -146,7 +146,7 @@ export function heroSceneHtml(): string {
 }
 
 /**
- * Styles for the line art and the hero scene. Plain CSS with literal FutureUni
+ * Styles for the line art and the hero scene. Plain CSS with literal Mag
  * colours, because the sign-in page is standalone HTML without the app's
  * Tailwind tokens. The app inlines the same string once.
  */

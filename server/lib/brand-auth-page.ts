@@ -4,7 +4,7 @@ import { LOGO_CSS, logoLockupSvg } from "../../shared/brand-logo.js";
 /**
  * Brands the framework's sign-in page (rendered by the toolkit) for Shop
  * Ledger: a navy panel with the animated logo and the hero scene beside the
- * sign-in card, the FutureUni fonts, and a light card. The framework's
+ * sign-in card, the Mag fonts, and a light card. The framework's
  * markup, scripts and form behaviour are left untouched; this only adds a
  * stylesheet and one aside (with the "Try the demo" button).
  */

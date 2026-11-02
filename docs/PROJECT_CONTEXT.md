@@ -41,7 +41,7 @@ Keep this file concise and evidence-based. Update current state in place, append
 
 ## Architecture Decisions
 
-- **Technology stack:** Agent-Native 0.222 (React Router, Nitro, Drizzle, Postgres/PGlite), TypeScript, Tailwind; FutureUni design tokens; Space Grotesk + Poppins
+- **Technology stack:** Agent-Native 0.222 (React Router, Nitro, Drizzle, Postgres/PGlite), TypeScript, Tailwind; Mag design tokens; Space Grotesk + Poppins
 - **Core architecture:** `shops` shareable resource; child tables products, customers, entries (append-only), entry_lines, reminders; money in kobo; cached stock/balances + `reconcile-ledger`
 - **Required integrations:** AI provider for the agent (Builder.io managed or BYO key); hosted Postgres for deploy
 - **Security assumptions:** access via `accessFilter` on the shop; approve/mark-sent are `uiOnly` + `agentTool:false`; agent text is data, reviewed by owner before sending; sample data synthetic
@@ -110,9 +110,9 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Evidence:** Live browser demo showed the failed run and save toast; source review found the prompt mapping. The prompt and metadata edits have not been deployed or retested.
 - **Status:** IMPLEMENTED in a local source snapshot; UNVERIFIED in production
 
-### 2026-10-31 — Build Shop Ledger with FutureUni theme
-- **Decision:** Build idea #1; theme with the FutureUni design system
-- **Reason:** discovery ranking; company rule that FutureUni visuals and UI follow its design system
+### 2026-10-31 — Build Shop Ledger with Mag theme
+- **Decision:** Build idea #1; theme with the Mag design system
+- **Reason:** discovery ranking; company rule that Mag visuals and UI follow its design system
 - **Alternatives considered:** Scope Guard, Shift Handover, Clip-to-Fix, Quote-to-Order
 - **Evidence:** official rules/judging; Agent-Native template catalogue
 - **Impact:** scope set; brand tokens in `app/global.css`
