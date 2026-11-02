@@ -8,15 +8,15 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Repository:** https://github.com/0xNexuz/0xNexuz-shop-ledger (public); Vercel project `shop-ledger` (team xreyy's projects), Git-linked, production branch `main`
 - **Project description:** Agent-native bookkeeping for small shops: say what happened, the agent records sales, credit, payments and stock through shared actions; the owner approves debtor reminders and sends them from WhatsApp.
 - **Current workflow stage:** DEPLOYMENT (P1) → next: AI provider, agent-flow verification, Clips demo, submission
-- **Overall status:** IMPLEMENTED; core ledger, rules and screens verified locally on 2026-10-31; a live demo agent run failed on 2026-11-01. Groq tool calling passed a direct provider check on 2026-11-02; a complete production agent run remains unverified.
+- **Overall status:** IMPLEMENTED; core ledger, rules and screens verified locally on 2026-10-31; a live demo agent run failed on 2026-11-01. Groq tool calling passed a direct provider check on 2026-11-02; production Groq variables were saved on 2026-11-02, but a complete agent run remains unverified.
 - **Last updated date:** 2026-11-02
 
 ## Git State
 
-- **Branch:** main (brand work fast-forwarded from `brand-refresh`)
+- **Branch:** main (PR #2 merged 2026-11-02)
 - **HEAD:** see `git log -1`
-- **Working tree:** clean after each commit
-- **Relevant remote or PR:** origin = github.com/0xNexuz/0xNexuz-shop-ledger; pushes to `main` deploy to production
+- **Working tree:** not asserted; check the active checkout before editing
+- **Relevant remote or PR:** https://github.com/0xNexuz/0xNexuz-shop-ledger/pull/2 merged; pushes to `main` deploy to production
 - **Last verified milestone:** brand refresh + preloader verified locally (2026-10-31); first production deploy started 2026-10-31
 
 ## Hackathon Context
@@ -57,7 +57,7 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **P1 priorities:** configure and test the live agent with Groq; record Clips demo; submit by Sun Nov 8
 - **P2 priorities:** demo-account clean-up job; email verification + password reset once an email provider is added; i18n of new UI strings
 - **P3 priorities:** hide the starter Home link; favicon.ico; README screenshots
-- **Current milestone:** P1 direct read-only checks, manual sale fallback, removal of notebook-photo capture, Groq production configuration and live agent verification
+- **Current milestone:** P1 direct read-only checks, manual sale fallback and removal of notebook-photo capture merged; Groq production variables configured; live agent verification pending
 - **Known blockers:** A live demo "How did we do today?" run on 2026-11-01 ended with "The server reported that this run failed" and a "Save failed" toast. Root cause is unconfirmed; inspect production runtime logs and verify a complete agent run before the Clips recording. Some Nigerian networks reset connections to vercel.app.
 
 ## Verification
@@ -88,8 +88,8 @@ Keep this file concise and evidence-based. Update current state in place, append
 ### 2026-11-02 — Text-only Groq agent and typed old-balance import
 - **Decision:** Remove notebook-photo capture and all claims that the agent reads images. Keep typed old-balance imports and owner review so existing drafts are not stranded. Use Groq `openai/gpt-oss-120b` for text and tool calls; the key remains outside Git.
 - **Reason:** The selected Groq model accepts text only. A direct forced tool-call check succeeded; the alternative Groq vision model failed to return the requested tool name reliably.
-- **Evidence:** Direct Groq provider test with the owner's key returned the requested tool call. Local `agent-native typecheck` and `doctor` passed clean after photo capture was removed. A browser smoke, production configuration and a complete app-level run still require verification.
-- **Status:** IMPLEMENTED locally; production UNVERIFIED
+- **Evidence:** Direct Groq provider test with the owner's key returned the requested tool call. Local `agent-native typecheck` and `doctor` passed clean after photo capture was removed. PR #2 merged and its Vercel preview passed. Vercel API showed `GROQ_API_KEY` as a Production sensitive variable and both `AGENT_ENGINE` and `AGENT_MODEL` as Production variables. A browser smoke and complete app-level run still require verification.
+- **Status:** MERGED; production agent UNVERIFIED
 
 ### 2026-11-01 — Action-driven fallback for the live agent
 - **Decision:** Today quick checks call `get-shop-overview` and `reconcile-ledger` directly. The freeform entry keeps the owner's words after handoff and offers the existing manual sale form.
