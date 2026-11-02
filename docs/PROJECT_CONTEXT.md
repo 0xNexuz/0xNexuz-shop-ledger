@@ -9,7 +9,7 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Project description:** Agent-native bookkeeping for small shops: say what happened, the agent records sales, credit, payments and stock through shared actions; the owner approves debtor reminders and sends them from WhatsApp.
 - **Current workflow stage:** DEPLOYMENT (P1) → next: AI provider, agent-flow verification, Clips demo, submission
 - **Overall status:** IMPLEMENTED; core ledger, rules and screens verified locally on 2026-10-31; a live demo agent run failed on 2026-11-01 and needs production diagnosis
-- **Last updated date:** 2026-11-01
+- **Last updated date:** 2026-11-02
 
 ## Git State
 
@@ -57,7 +57,7 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **P1 priorities:** owner tests the live agent with Gemini; record Clips demo; submit by Sun Nov 8
 - **P2 priorities:** demo-account clean-up job; email verification + password reset once an email provider is added; i18n of new UI strings
 - **P3 priorities:** hide the starter Home link; favicon.ico; README screenshots
-- **Current milestone:** P1 live agent check
+- **Current milestone:** P1 reliable demo fallback: direct read-only summary and reconciliation; manual sale escape from agent entry
 - **Known blockers:** A live demo "How did we do today?" run on 2026-11-01 ended with "The server reported that this run failed" and a "Save failed" toast. Root cause is unconfirmed; inspect production runtime logs and verify a complete agent run before the Clips recording. Some Nigerian networks reset connections to vercel.app.
 
 ## Verification
@@ -84,6 +84,12 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Unverified claims:** agent conversation quality and tool choice; scheduled automation; hosted deploy
 
 ## Decision Log
+
+### 2026-11-01 — Action-driven fallback for the live agent
+- **Decision:** Today quick checks call `get-shop-overview` and `reconcile-ledger` directly. The freeform entry keeps the owner's words after handoff and offers the existing manual sale form.
+- **Reason:** A failed model run must not block the judge's read-only checks or erase the owner's entry. UI and agent still share the same action layer.
+- **Evidence:** Local typecheck and `agent-native doctor` passed; browser sample shop showed direct summary (₦6,300 sales), reconciliation (7 products, 5 customers, balanced), retained entry text, and the manual sale dialog. Production verification pending.
+- **Status:** VERIFIED locally, UNVERIFIED in production
 
 ### 2026-11-01 — Read-only daily questions and live agent failure
 - **Decision:** Route daily sales questions to `get-shop-overview` and book checks to `reconcile-ledger`; reserve `close-the-day` for explicit close requests. Make both quick asks name their read-only action. Replace the starter SEO title and description.

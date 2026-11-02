@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import { useShop } from "./shop";
 
 export default function ShopToday() {
-  const { shop } = useShop();
+  const { shop, openSale } = useShop();
   const { data } = useActionQuery("get-shop-overview", {});
   const reminders = useActionQuery("list-reminders", { status: "open" });
   if (!data) return <Skeleton className="h-96 rounded-lg" />;
@@ -25,7 +25,7 @@ export default function ShopToday() {
 
   return (
     <div className="space-y-5">
-      <AskBar />
+      <AskBar currency={shop.currency} onManualSale={openSale} />
 
       <section
         aria-label="Today's till"
