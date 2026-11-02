@@ -6,7 +6,7 @@ import { EmptyState } from "@/components/brand/LineArt";
 import { AskBar } from "@/components/shop/AskBar";
 import { EntryLine } from "@/components/shop/EntryLine";
 import { EveningClose } from "@/components/shop/EveningClose";
-import { NotebookImports, SnapNotebookButton } from "@/components/shop/NotebookImport";
+import { NotebookImports } from "@/components/shop/NotebookImport";
 import { ReminderCard } from "@/components/shop/ReminderCard";
 import { askAgent, dayLabel, money } from "@/components/shop/format";
 import { Button } from "@/components/ui/button";
@@ -92,9 +92,8 @@ export default function ShopToday() {
               ))}
             </ul>
           ) : (
-            <EmptyState art="book" action={<SnapNotebookButton label="Snap your old notebook" />}>
-              Nothing recorded yet. Tell the agent your first sale above, or bring in what&apos;s already in your paper
-              notebook.
+            <EmptyState art="book">
+              Nothing recorded yet. Tell the agent your first sale above, or enter a sale manually.
             </EmptyState>
           )}
         </section>

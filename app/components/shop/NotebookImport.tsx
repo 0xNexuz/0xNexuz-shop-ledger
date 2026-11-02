@@ -1,90 +1,12 @@
-import { sendToAgentChat } from "@agent-native/core/client/agent-chat";
 import { actionErrorMessage, useActionMutation, useActionQuery } from "@agent-native/core/client/hooks";
-import { IconCamera, IconCheck, IconNotebook, IconX } from "@tabler/icons-react";
-import { useRef, useState } from "react";
+import { IconCheck, IconNotebook, IconX } from "@tabler/icons-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 import { SourceBadge } from "./EntryLine";
 import { dayLabel, money } from "./format";
-
-const NOTEBOOK_PROMPT =
-  "This is a photo of a page from my shop's notebook. Read it and use propose-notebook-import to put it up for my review: each customer with what they owe (and any date they promised), and each product with the stock count and price if written. The writing may be in English, Pidgin, Yoruba, Igbo or Hausa, with amounts like 5k or 5,000. Leave out anything you can't read clearly and tell me which lines.";
-
-/** Phone photos are several MB; the agent reads a 1600 px JPEG just as well. */
-async function photoToDataUrl(file: File, maxSide = 1600): Promise<string> {
-  try {
-    const bitmap = await createImageBitmap(file);
-    const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
-    const canvas = document.createElement("canvas");
-    canvas.width = Math.round(bitmap.width * scale);
-    canvas.height = Math.round(bitmap.height * scale);
-    canvas.getContext("2d")?.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-    bitmap.close();
-    return canvas.toDataURL("image/jpeg", 0.82);
-  } catch {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result));
-      reader.onerror = () => reject(reader.error);
-      reader.readAsDataURL(file);
-    });
-  }
-}
-
-/** Camera button: snap (or pick) a notebook page and hand it to the agent. */
-export function SnapNotebookButton({ className, label = "Snap your notebook" }: { className?: string; label?: string }) {
-  const input = useRef<HTMLInputElement>(null);
-  const [busy, setBusy] = useState(false);
-
-  async function onFile(file: File | undefined) {
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      toast.error("That isn't a photo. Pick a picture of the notebook page.");
-      return;
-    }
-    setBusy(true);
-    try {
-      const image = await photoToDataUrl(file);
-      sendToAgentChat({ message: NOTEBOOK_PROMPT, images: [image], submit: true, openSidebar: true });
-      toast.success("Reading your notebook page… you'll review everything before it goes in.");
-    } catch {
-      toast.error("Couldn't read that photo. Try another one.");
-    } finally {
-      setBusy(false);
-      if (input.current) input.current.value = "";
-    }
-  }
-
-  return (
-    <>
-      <input
-        ref={input}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="sr-only"
-        tabIndex={-1}
-        aria-hidden
-        onChange={(event) => void onFile(event.target.files?.[0])}
-      />
-      <button
-        type="button"
-        disabled={busy}
-        onClick={() => input.current?.click()}
-        className={cn(
-          "inline-flex items-center gap-1.5 rounded-full border border-foreground bg-secondary px-3 py-1 text-xs font-semibold text-secondary-foreground transition-colors hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60",
-          className,
-        )}
-      >
-        <IconCamera className="size-3.5" />
-        {busy ? "Preparing photo…" : label}
-      </button>
-    </>
-  );
-}
 
 interface ImportView {
   id: string;
@@ -109,7 +31,7 @@ interface ImportView {
   totals: { owed: number; customers: number; products: number };
 }
 
-/** Notebook pages the agent has read, waiting for the owner to tick and add. */
+/** Typed imports proposed by the agent, waiting for the owner to tick and add. */
 export function NotebookImports({ currency }: { currency: string }) {
   const query = useActionQuery("list-imports", { status: "draft" });
   const drafts = (query.data?.imports ?? []) as ImportView[];
@@ -131,7 +53,7 @@ function ImportReview({ draft, currency }: { draft: ImportView; currency: string
     onError: (error) => toast.error(actionErrorMessage(error) ?? "Couldn't add those lines."),
   });
   const dismiss = useActionMutation("dismiss-notebook-import", {
-    onSuccess: () => toast("Notebook page discarded. Nothing changed."),
+    onSuccess: () => toast("Import draft discarded. Nothing changed."),
     onError: (error) => toast.error(actionErrorMessage(error) ?? "Couldn't discard it."),
   });
   const chosen = customers.size + products.size;
@@ -145,12 +67,12 @@ function ImportReview({ draft, currency }: { draft: ImportView; currency: string
 
   return (
     <section
-      aria-label="Notebook page to review"
+      aria-label="Import draft to review"
       className="brand-corner rounded-lg border-2 border-foreground bg-card p-4 shadow-[4px_4px_0_0_hsl(var(--brand-violet))] sm:p-5"
     >
       <div className="flex flex-wrap items-center gap-2">
         <IconNotebook className="size-5" aria-hidden />
-        <h2 className="font-display text-lg font-semibold">From your notebook</h2>
+        <h2 className="font-display text-lg font-semibold">Old balances to review</h2>
         <SourceBadge source="agent" />
         <span className="ml-auto text-xs text-muted-foreground">Nothing is in your books until you tap Add.</span>
       </div>

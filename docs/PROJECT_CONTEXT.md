@@ -8,7 +8,7 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Repository:** https://github.com/0xNexuz/0xNexuz-shop-ledger (public); Vercel project `shop-ledger` (team xreyy's projects), Git-linked, production branch `main`
 - **Project description:** Agent-native bookkeeping for small shops: say what happened, the agent records sales, credit, payments and stock through shared actions; the owner approves debtor reminders and sends them from WhatsApp.
 - **Current workflow stage:** DEPLOYMENT (P1) → next: AI provider, agent-flow verification, Clips demo, submission
-- **Overall status:** IMPLEMENTED; core ledger, rules and screens verified locally on 2026-10-31; a live demo agent run failed on 2026-11-01 and needs production diagnosis
+- **Overall status:** IMPLEMENTED; core ledger, rules and screens verified locally on 2026-10-31; a live demo agent run failed on 2026-11-01. Groq tool calling passed a direct provider check on 2026-11-02; a complete production agent run remains unverified.
 - **Last updated date:** 2026-11-02
 
 ## Git State
@@ -50,14 +50,14 @@ Keep this file concise and evidence-based. Update current state in place, append
 ## Development Progress
 
 - **Approved implementation scope:** P0 build of Shop Ledger + hosting on GitHub/Vercel/Neon Postgres (approved 2026-10-31; Supabase is not used); four agent features chosen by the owner 2026-10-31: snap the notebook, talk like you talk, credit sense, evening close + nicknames
-- **Completed features:** schema/migrations (v1–v3); 35 actions; ledger rules; reminders state machine; Today/Ledger/Customers/Stock screens; sale dialog with credit warning; onboarding + sample shop; agent prompt, tools, navigation state; UI-only approval; brand refresh (logo, preloader, sign-in); one-tap demo + welcome card; notebook photo import (owner applies); voice/dictation + local-language prompt; credit sense (status, limits, credit_check on sales); evening close (7 pm via Vercel cron + button + agent tool); nicknames for customers and products
-- **Implemented but unverified:** the live agent with Gemini on production (photo reading, Pidgin/Yoruba/Hausa/Igbo understanding, add-nickname/close-the-day tool choice); the 7 pm Vercel cron firing in production
+- **Completed features:** schema/migrations (v1–v3); 35 actions; ledger rules; reminders state machine; Today/Ledger/Customers/Stock screens; sale dialog with credit warning; onboarding + sample shop; agent prompt, tools, navigation state; UI-only approval; brand refresh (logo, preloader, sign-in); one-tap demo + welcome card; typed old-balance import drafts (owner applies); voice/dictation + local-language prompt; credit sense (status, limits, credit_check on sales); evening close (7 pm via Vercel cron + button + agent tool); nicknames for customers and products
+- **Implemented but unverified:** the production agent (Pidgin/Yoruba/Hausa/Igbo understanding, add-nickname/close-the-day tool choice); the 7 pm Vercel cron firing in production
 - **Pending features:** Clips demo; submission text; optional "Keep this shop" (demo → real account); optional Telegram entry; CSV export
 - **P0 priorities:** none open
-- **P1 priorities:** owner tests the live agent with Gemini; record Clips demo; submit by Sun Nov 8
+- **P1 priorities:** configure and test the live agent with Groq; record Clips demo; submit by Sun Nov 8
 - **P2 priorities:** demo-account clean-up job; email verification + password reset once an email provider is added; i18n of new UI strings
 - **P3 priorities:** hide the starter Home link; favicon.ico; README screenshots
-- **Current milestone:** P1 reliable demo fallback: direct read-only summary and reconciliation; manual sale escape from agent entry
+- **Current milestone:** P1 direct read-only checks, manual sale fallback, removal of notebook-photo capture, Groq production configuration and live agent verification
 - **Known blockers:** A live demo "How did we do today?" run on 2026-11-01 ended with "The server reported that this run failed" and a "Save failed" toast. Root cause is unconfirmed; inspect production runtime logs and verify a complete agent run before the Clips recording. Some Nigerian networks reset connections to vercel.app.
 
 ## Verification
@@ -84,6 +84,12 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Unverified claims:** agent conversation quality and tool choice; scheduled automation; hosted deploy
 
 ## Decision Log
+
+### 2026-11-02 — Text-only Groq agent and typed old-balance import
+- **Decision:** Remove notebook-photo capture and all claims that the agent reads images. Keep typed old-balance imports and owner review so existing drafts are not stranded. Use Groq `openai/gpt-oss-120b` for text and tool calls; the key remains outside Git.
+- **Reason:** The selected Groq model accepts text only. A direct forced tool-call check succeeded; the alternative Groq vision model failed to return the requested tool name reliably.
+- **Evidence:** Direct Groq provider test with the owner's key returned the requested tool call. Local `agent-native typecheck` and `doctor` passed clean after photo capture was removed. A browser smoke, production configuration and a complete app-level run still require verification.
+- **Status:** IMPLEMENTED locally; production UNVERIFIED
 
 ### 2026-11-01 — Action-driven fallback for the live agent
 - **Decision:** Today quick checks call `get-shop-overview` and `reconcile-ledger` directly. The freeform entry keeps the owner's words after handoff and offers the existing manual sale form.
@@ -162,7 +168,7 @@ Keep this file concise and evidence-based. Update current state in place, append
 
 ## Next Action
 
-- **Next recommended action:** owner tests the live agent with Gemini (notebook photo, a Pidgin sentence, a credit sale to Chinedu, "close the day", "Mama N na Mama Ngozi"); then record the Clips demo
+- **Next recommended action:** test the live agent with Groq (a Pidgin sentence, a credit sale to Chinedu, "close the day", "Mama N na Mama Ngozi"); then record the Clips demo
 - **Next authorized action:** pushes to `main` (owner said "push deploy whats needed")
 - **Next approved milestone:** submission by Sun Nov 8 (deadline Tue Nov 10 08:59 Lagos)
 - **Approval boundary:** submitting, paid resources and anything public beyond the existing deploy need explicit go-ahead

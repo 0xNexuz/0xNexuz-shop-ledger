@@ -13,7 +13,6 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 
 import { askAgent, money } from "./format";
-import { SnapNotebookButton } from "./NotebookImport";
 
 /** Say it the way you'd say it: English, Pidgin, Yoruba, Hausa or Igbo. */
 const EXAMPLES = [
@@ -210,7 +209,6 @@ export function AskBar({
         </div>
       ) : null}
       <div className="no-scrollbar -mx-4 flex items-center gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
-        <SnapNotebookButton className="shrink-0 whitespace-nowrap" />
         <button
           type="button"
           onClick={() => setView("summary")}

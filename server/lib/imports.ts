@@ -9,8 +9,7 @@ import { formatMoney, toNaira } from "./money.js";
 import { type Actor, type ShopRef, kobo, loadCustomers, loadProducts } from "./shop.js";
 
 /**
- * "Snap the notebook": the agent reads a photo of the owner's paper exercise
- * book and proposes the customers who owe and the stock on hand. The proposal
+ * The agent turns typed old balances and stock counts into a proposal. The proposal
  * is stored as a draft; only the owner, in the app, can apply it. Applying
  * posts ordinary ledger entries (opening balances and stock counts), so the
  * books still reconcile and every line can be voided like any other entry.
@@ -22,7 +21,7 @@ const dayPattern = /^\d{4}-\d{2}-\d{2}$/;
 
 export const importCustomerLine = z.object({
   name: z.string().min(2).max(80).describe("Customer name as written"),
-  owes: z.coerce.number().nonnegative().describe("Naira they owe, as written in the notebook"),
+  owes: z.coerce.number().nonnegative().describe("Naira the customer owes, as typed by the owner"),
   dueDate: z.string().regex(dayPattern).nullable().optional().describe("Promised payment day YYYY-MM-DD, if written"),
   phone: z.string().max(30).nullable().optional(),
   note: z.string().max(140).nullable().optional().describe("Anything else on the line worth keeping"),
