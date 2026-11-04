@@ -8,6 +8,7 @@ import { AppProviders } from "@agent-native/toolkit/app/providers";
 import { useCommandMenuShortcut } from "@agent-native/toolkit/app/shared";
 import { CommandMenu } from "@agent-native/toolkit/app/shared";
 import { useQueryClient } from "@tanstack/react-query";
+import { Analytics } from "@vercel/analytics/react";
 import { useTheme } from "next-themes";
 import { useCallback, useState } from "react";
 import {
@@ -87,6 +88,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {children}
         <ScrollRestoration />
         <Scripts />
+        <Analytics />
       </body>
     </html>
   );
