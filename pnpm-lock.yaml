@@ -113,6 +113,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.99.2
         version: 5.105.0(@types/react@19.3.0)(react@19.3.1)
+      '@vercel/analytics':
+        specifier: ^1.4.1
+        version: 1.6.1(react@19.3.1)
       ai:
         specifier: 6.0.258
         version: 6.0.258(zod@4.6.7)
@@ -3047,6 +3050,32 @@ packages:
 
   '@ungap/structured-clone@1.4.0':
     resolution: {integrity: sha512-1mEZtMKPM09vDmQt5y7YvmN2+DFTP7Tg0EWXdic8/C6VRnpb33e4ghisCIE3WZjsE2N8mf+QV1Zqh7ZFYLWInQ==}
+
+  '@vercel/analytics@1.6.1':
+    resolution: {integrity: sha512-oH9He/bEM+6oKlv3chWuOOcp8Y6fo6/PSro8hEkgCW3pu9/OiCXiUpRUogDh3Fs3LH2sosDrx8CxeOLBEE+afg==}
+    peerDependencies:
+      '@remix-run/react': ^2
+      '@sveltejs/kit': ^1 || ^2
+      next: '>= 13'
+      react: ^18 || ^19 || ^19.0.0-rc
+      svelte: '>= 4'
+      vue: ^3
+      vue-router: ^4
+    peerDependenciesMeta:
+      '@remix-run/react':
+        optional: true
+      '@sveltejs/kit':
+        optional: true
+      next:
+        optional: true
+      react:
+        optional: true
+      svelte:
+        optional: true
+      vue:
+        optional: true
+      vue-router:
+        optional: true
 
   '@vercel/oidc@3.2.0':
     resolution: {integrity: sha512-UycprH3T6n3jH0k44NHMa7pnFHGu/N05MjojYr+Mc6I7obkoLIJujSWwin1pCvdy/eOxrI/l3uDLQsmcrOb4ug==}
@@ -8212,6 +8241,10 @@ snapshots:
       - '@codemirror/search'
 
   '@ungap/structured-clone@1.4.0': {}
+
+  '@vercel/analytics@1.6.1(react@19.3.1)':
+    optionalDependencies:
+      react: 19.3.1
 
   '@vercel/oidc@3.2.0': {}
 
