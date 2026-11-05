@@ -94,7 +94,7 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Decision:** (1) Partial name matches use whole words only, and for customers a longer name never resolves to a shorter one ("Ada Obi" ≠ "Ada"). A new name that looks like an existing customer (typo within 1–2 letters, or a fuller name) fails with `similar_customer` until the owner confirms with `newCustomer` (agent tool arg and a sale-dialog prompt). (2) A customer's promised day comes only from credit still open since their balance last reached zero.
 - **Reason:** substring matching put "Adaeze" on Ada's account and "Chinedum" on Chinedu's; a typo silently opened a second account and skipped credit sense. Old promises from cleared debts made good payers look late, held their credit and drafted reminders at the evening close.
 - **Evidence:** vitest 32/32, verify-rules 40/40 (new checks fail on the previous code), typecheck and doctor clean, browser smoke at 1280px and 390px.
-- **Status:** IMPLEMENTED on branch `fix/customer-matching-open-promises`; production unchanged until merged
+- **Status:** MERGED to `main` 2026-11-05 (branch `fix/customer-matching-open-promises`); deploys to production
 
 ### 2026-11-02 — Focus the Groq agent on shop actions
 - **Decision:** Expose eight shop actions to the chat agent, shorten its instruction, and cap tool results at 1,800 characters. The manual Stock screen handles restocks; the owner-only reminder controls remain in the UI.
