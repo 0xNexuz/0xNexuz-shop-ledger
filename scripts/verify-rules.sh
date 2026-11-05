@@ -28,6 +28,22 @@ expect() { # expect <description> <regex> <command...>
 
 id_of() { grep -m1 -oE "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"; }
 
+refute() { # refute <description> <regex> <command...>: passes when the output does NOT match
+  local desc="$1" pattern="$2"
+  shift 2
+  local out
+  out="$(act "$@")"
+  if grep -qE -- "$pattern" <<<"$out"; then
+    echo "FAIL  $desc"
+    echo "      did not expect /$pattern/ in:"
+    grep -E -- "$pattern" <<<"$out" | sed 's/^/      | /' | head -4
+    fail=$((fail + 1))
+  else
+    echo "PASS  $desc"
+    pass=$((pass + 1))
+  fi
+}
+
 echo "Identity: $AGENT_USER_EMAIL"
 expect "sample shop loads" "products: 7" load-demo-data
 expect "books balance after sample data" "ok: true" reconcile-ledger
@@ -91,6 +107,26 @@ expect "a nickname can mean only one customer" "already means Mama Ngozi" \
   add-nickname --kind customer --ref chinedu --nickname "mama pikin"
 expect "products learn nicknames too" "\"one bag\" means Rice" \
   add-nickname --kind product --ref rice --nickname "one bag"
+
+# A promise belongs to the debt it came with: Chinedu cleared his late debt above,
+# so new credit without a date must not count him as 12 days late.
+expect "new credit after a cleared debt goes through" "Chinedu now owes ₦2,500" \
+  record-sale --lines '[{"product":"garri","qty":1}]' --customer chinedu --paid 0
+expect "…and his standing carries no old promise" "promisedBy: null" get-credit-standing --customer chinedu
+expect "…so more credit isn't held as if he were late" "Chinedu now owes ₦5,000" \
+  record-sale --lines '[{"product":"garri","qty":1}]' --customer chinedu --paid 0
+
+# Names: ask rather than guess, so one person's debt never lands on another's account.
+expect "a typo of a customer's name is asked about, not given a new account" "looks like Iya Bisi" \
+  record-sale --lines '[{"product":"sugar","qty":1}]' --customer "Iya Bisii" --paid 0
+expect "a fuller name for an existing customer is asked about" "looks like Aunty Kemi" \
+  record-sale --lines '[{"product":"sugar","qty":1}]' --customer "Aunty Kemi Adeyemi" --paid 0
+refute "…and neither opened an account" "Iya Bisii|Kemi Adeyemi" list-customers
+expect "…once the owner says she is new, she gets her own account" "Aunty Kemi Adeyemi now owes ₦1,800" \
+  record-sale --lines '[{"product":"sugar","qty":1}]' --customer "Aunty Kemi Adeyemi" --paid 0 --newCustomer true
+expect "a different name that starts the same is not put on Chinedu" "Chinedum Okeke now owes ₦1,800" \
+  record-sale --lines '[{"product":"sugar","qty":1}]' --customer "Chinedum Okeke" --paid 0
+expect "…and Chinedu's own balance is untouched" "balance: 5000" get-credit-standing --customer chinedu
 
 expect "the evening close writes the day's totals" "in sales from [0-9]+ sale" close-the-day
 expect "…once per day: asking again returns the same close" "in sales from [0-9]+ sale" get-latest-close

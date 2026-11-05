@@ -56,7 +56,7 @@ These live in the actions, not in the prompt:
 - Anything left unpaid needs a named customer; a payment can't exceed what is owed.
 - Money is integer kobo; there are no floating-point naira.
 - Entries are append-only. A mistake is **voided**: stock and balances are reversed and the entry stays, marked, for the audit trail. A void that would push stock or a balance below zero is refused.
-- Names are matched carefully (real names, then nicknames, then partial matches). An ambiguous name is reported, never guessed.
+- Names are matched carefully (real names, then nicknames, then whole words of a name: "Ngozi" finds Mama Ngozi, but "Ada" never finds Adaeze). An ambiguous name is reported, never guessed, and a new name that looks like an existing customer (a typo, or a fuller name) is asked about before a second account is opened.
 - More credit to someone over 7 days late, or over their limit, needs the owner's explicit yes (`confirmCredit`).
 - A typed old-balance import is only a draft until the owner applies it in the app.
 - One open reminder per customer (partial unique index). Reminders follow a state machine: `draft → approved → sent`, or `dismissed`. The evening close drafts only for late payers who have no open reminder.
@@ -66,8 +66,8 @@ These live in the actions, not in the prompt:
 
 | Check | Command | Last result |
 | --- | --- | --- |
-| Unit tests: money, matching and nicknames, time, reminder machine | `pnpm exec vitest run` | 19/19 passed (Oct 31) |
-| Ledger rules against a real database | `bash scripts/verify-rules.sh` (dev server running) | 31/31 passed (Oct 31) |
+| Unit tests: money, matching and nicknames, look-alike names, open promises, time, reminder machine | `pnpm exec vitest run` | 32/32 passed (Nov 5) |
+| Ledger rules against a real database | `bash scripts/verify-rules.sh` (dev server running) | 40/40 passed (Nov 5) |
 | Types | `pnpm typecheck` | clean (Nov 2) |
 | Framework guards (scoping, credentials, migrations…) | `pnpm agent-native:doctor` | clean (Nov 2) |
 | 7 pm hook | `curl` the sweep path with a wrong and a right cron secret | wrong → 401, nothing closed; right → 200, every active shop closed (Oct 31) |

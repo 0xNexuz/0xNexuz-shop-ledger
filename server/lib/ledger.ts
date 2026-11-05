@@ -4,6 +4,7 @@ import { and, asc, desc, eq, gt, gte, inArray, lt, lte, ne, sql } from "drizzle-
 import { getDb, schema } from "../db/index.js";
 import type { EntryKind, PaymentMethod } from "../db/schema.js";
 import { formatMoney, planSale, toNaira } from "./money.js";
+import { type BalanceMove, openPromise } from "./promises.js";
 import {
   type Actor,
   type ShopRef,
@@ -278,7 +279,9 @@ function lineRow(shop: ShopRef, actor: Actor, entryId: string, productId: string
 export interface SaleInput {
   customer?: string | undefined;
   createCustomerIfMissing: boolean;
-  lines: { product: string; qty: number; unitPrice?: number | undefined }[];
+  /** The owner confirmed a name that looks like an existing customer is someone new. */
+  newCustomer?: boolean | undefined;
+  lines:{ product: string; qty: number; unitPrice?: number | undefined }[];
   paid?: number | undefined;
   method: PaymentMethod;
   dueDate?: string | undefined;
@@ -303,7 +306,9 @@ export async function postSale(shop: ShopRef, actor: Actor, input: SaleInput): P
   });
 
   const customer = input.customer
-    ? resolveCustomer(await loadCustomers(shop.id), input.customer, input.createCustomerIfMissing)
+    ? resolveCustomer(await loadCustomers(shop.id), input.customer, input.createCustomerIfMissing, {
+        confirmedNew: input.newCustomer === true,
+      })
     : null;
   const plan = planSale({
     lines: lines.map((l) => ({ qty: l.qty, unitKobo: l.unitKobo })),
@@ -632,24 +637,33 @@ export async function listAccounts(
   const today = filter.today;
   if (!rows.length) return [];
   const ids = rows.map((r) => r.id);
-  const promises = await getDb()
-    .select({ customerId: entries.customerId, dueDate: sql<string | null>`max(${entries.dueDate})` })
+  // Every balance change in order, so a promise from a debt that was since
+  // cleared doesn't make the customer look late on newer credit.
+  const moves = await getDb()
+    .select({ customerId: entries.customerId, delta: entries.balanceDeltaKobo, dueDate: entries.dueDate })
     .from(entries)
     .where(
       and(
+        eq(entries.shopId, shop.id),
         inArray(entries.customerId, ids),
-        inArray(entries.kind, ["sale", "adjustment"]),
         eq(entries.status, "posted"),
-        gt(entries.balanceDeltaKobo, 0),
+        ne(entries.balanceDeltaKobo, 0),
       ),
     )
-    .groupBy(entries.customerId);
+    .orderBy(asc(entries.occurredAt), asc(entries.id));
+  const movesByCustomer = new Map<string, BalanceMove[]>();
+  for (const move of moves) {
+    if (!move.customerId) continue;
+    const list = movesByCustomer.get(move.customerId) ?? [];
+    list.push({ delta: move.delta, dueDate: move.dueDate });
+    movesByCustomer.set(move.customerId, list);
+  }
   const open = await getDb()
     .select({ customerId: reminders.customerId, status: reminders.status })
     .from(reminders)
     .where(and(inArray(reminders.customerId, ids), inArray(reminders.status, ["draft", "approved"])));
   return rows.map((r) => {
-    const promisedBy = promises.find((p) => p.customerId === r.id)?.dueDate ?? null;
+    const promisedBy = openPromise(movesByCustomer.get(r.id) ?? []);
     const reminder = open.find((o) => o.customerId === r.id);
     const owes = r.balanceKobo > 0;
     return {

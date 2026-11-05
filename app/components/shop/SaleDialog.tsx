@@ -1,5 +1,5 @@
 import { actionErrorMessage, useActionMutation, useActionQuery } from "@agent-native/core/client/hooks";
-import { IconAlertTriangle, IconPlus, IconTrash } from "@tabler/icons-react";
+import { IconAlertTriangle, IconPlus, IconTrash, IconUserQuestion } from "@tabler/icons-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -23,6 +23,24 @@ interface Line {
   qty: string;
 }
 
+/** The server's "this name looks like someone you already have" warning. */
+interface SimilarCustomer {
+  name: string;
+  candidates: { id: string; name: string }[];
+}
+
+function similarCustomerOf(error: unknown): SimilarCustomer | null {
+  const details = error && typeof error === "object" && "details" in error ? (error as { details?: unknown }).details : null;
+  if (!details || typeof details !== "object") return null;
+  const { name, candidates } = details as { name?: unknown; candidates?: unknown };
+  if (typeof name !== "string" || !Array.isArray(candidates)) return null;
+  const list = candidates.filter(
+    (c): c is { id: string; name: string } =>
+      !!c && typeof c === "object" && typeof (c as { id?: unknown }).id === "string" && typeof (c as { name?: unknown }).name === "string",
+  );
+  return list.length ? { name, candidates: list } : null;
+}
+
 const selectClass =
   "h-9 w-full rounded-md border border-input bg-card px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
@@ -37,6 +55,8 @@ export function SaleDialog({ open, onOpenChange, currency }: { open: boolean; on
   const [dueDate, setDueDate] = useState("");
   // Credit sense: the server's warning before more credit goes to a late payer.
   const [creditWarning, setCreditWarning] = useState<string | null>(null);
+  // Asked before a second account is opened for someone already in the books.
+  const [similar, setSimilar] = useState<SimilarCustomer | null>(null);
 
   const catalog = products.data?.products ?? [];
   const total = useMemo(
@@ -57,6 +77,7 @@ export function SaleDialog({ open, onOpenChange, currency }: { open: boolean; on
     setMethod("cash");
     setDueDate("");
     setCreditWarning(null);
+    setSimilar(null);
   };
 
   const sale = useActionMutation("record-sale", {
@@ -71,20 +92,27 @@ export function SaleDialog({ open, onOpenChange, currency }: { open: boolean; on
         setCreditWarning(message.replace(/^Credit check:\s*/, "").replace(/\s*Ask the owner.*$/, "").replace(/\.$/, ""));
         return;
       }
+      const lookalike = errorCodeOf(error) === "similar_customer" ? similarCustomerOf(error) : null;
+      if (lookalike) {
+        setSimilar(lookalike);
+        return;
+      }
       toast.error(message);
     },
   });
 
   const ready = lines.every((l) => l.productId && Number(l.qty) > 0) && (onCredit === 0 || customer.trim().length >= 2);
 
-  function send(confirmCredit: boolean) {
+  function send(options: { confirmCredit?: boolean; newCustomer?: boolean; customerName?: string } = {}) {
+    const name = (options.customerName ?? customer).trim();
     sale.mutate({
       lines: lines.map((l) => ({ product: l.productId, qty: Number(l.qty) })),
       method,
-      ...(customer.trim() ? { customer: customer.trim() } : {}),
+      ...(name ? { customer: name } : {}),
       ...(paid.trim() !== "" ? { paid: Number(paid) } : {}),
       ...(onCredit > 0 && dueDate ? { dueDate } : {}),
-      ...(confirmCredit ? { confirmCredit: true } : {}),
+      ...(options.confirmCredit ? { confirmCredit: true } : {}),
+      ...(options.newCustomer ? { newCustomer: true } : {}),
     });
   }
 
@@ -92,7 +120,14 @@ export function SaleDialog({ open, onOpenChange, currency }: { open: boolean; on
     event.preventDefault();
     if (!ready) return;
     setCreditWarning(null);
-    send(false);
+    setSimilar(null);
+    send();
+  }
+
+  function pickExisting(name: string) {
+    setCustomer(name);
+    setSimilar(null);
+    send({ customerName: name });
   }
 
   return (
@@ -173,7 +208,10 @@ export function SaleDialog({ open, onOpenChange, currency }: { open: boolean; on
                 id="sale-customer"
                 list="sale-customer-list"
                 value={customer}
-                onChange={(event) => setCustomer(event.target.value)}
+                onChange={(event) => {
+                  setCustomer(event.target.value);
+                  setSimilar(null);
+                }}
                 placeholder="Walk-in"
                 autoComplete="off"
               />
@@ -223,6 +261,37 @@ export function SaleDialog({ open, onOpenChange, currency }: { open: boolean; on
             <span className="tabular font-display text-xl font-bold">{money(total, currency)}</span>
           </div>
 
+          {similar ? (
+            <div role="alert" className="flex gap-3 rounded-lg border-2 border-warning bg-warning/10 p-3 text-sm">
+              <IconUserQuestion className="mt-0.5 size-5 shrink-0 text-warning" aria-hidden />
+              <div className="space-y-2">
+                <p>
+                  <span className="font-semibold">Is this someone you already have? </span>
+                  “{similar.name}” looks like {similar.candidates.map((c) => c.name).join(" or ")}.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {similar.candidates.map((c) => (
+                    <Button key={c.id} type="button" size="sm" disabled={sale.isPending} onClick={() => pickExisting(c.name)}>
+                      Use {c.name}
+                    </Button>
+                  ))}
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={sale.isPending}
+                    onClick={() => {
+                      setSimilar(null);
+                      send({ newCustomer: true });
+                    }}
+                  >
+                    No, {similar.name} is new
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
           {creditWarning ? (
             <div role="alert" className="flex gap-3 rounded-lg border-2 border-warning bg-warning/10 p-3 text-sm">
               <IconAlertTriangle className="mt-0.5 size-5 shrink-0 text-warning" aria-hidden />
@@ -232,7 +301,7 @@ export function SaleDialog({ open, onOpenChange, currency }: { open: boolean; on
                   {creditWarning}.
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  <Button type="button" size="sm" variant="outline" disabled={sale.isPending} onClick={() => send(true)}>
+                  <Button type="button" size="sm" variant="outline" disabled={sale.isPending} onClick={() => send({ confirmCredit: true })}>
                     Give credit anyway
                   </Button>
                   <Button type="button" size="sm" variant="ghost" onClick={() => setCreditWarning(null)}>

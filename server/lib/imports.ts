@@ -6,7 +6,7 @@ import { getDb, schema } from "../db/index.js";
 import { postOpeningBalance, postOpeningStock, postStockCount } from "./ledger.js";
 import { matchByName, normalizeName } from "./match.js";
 import { formatMoney, toNaira } from "./money.js";
-import { type Actor, type ShopRef, kobo, loadCustomers, loadProducts } from "./shop.js";
+import { CUSTOMER_MATCH, type Actor, type ShopRef, kobo, loadCustomers, loadProducts } from "./shop.js";
 
 /**
  * The agent turns typed old balances and stock counts into a proposal. The proposal
@@ -99,7 +99,7 @@ async function toView(shop: ShopRef, row: typeof imports.$inferSelect): Promise<
   const payload = importPayload.parse(JSON.parse(row.payload));
   const [customerRows, productRows] = await Promise.all([loadCustomers(shop.id), loadProducts(shop.id)]);
   const customerLines = payload.customers.map((line, index) => {
-    const match = matchByName(customerRows, line.name);
+    const match = matchByName(customerRows, line.name, CUSTOMER_MATCH);
     const existing = match.kind === "match" ? match.item : null;
     return {
       index,
@@ -229,7 +229,7 @@ export async function applyImport(
     if (!locked) fail("That import was just applied or dismissed.", { errorCode: "invalid_transition", statusCode: 409 });
 
     for (const line of chosenCustomers) {
-      const match = matchByName(customerRows, line.name);
+      const match = matchByName(customerRows, line.name, CUSTOMER_MATCH);
       let customerId: string;
       if (match.kind === "match") {
         customerId = match.item.id;

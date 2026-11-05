@@ -9,7 +9,7 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Project description:** Agent-native bookkeeping for small shops: say what happened, the agent records sales, credit, payments and stock through shared actions; the owner approves debtor reminders and sends them from WhatsApp.
 - **Current workflow stage:** DEPLOYMENT (P1) → next: AI provider, agent-flow verification, Clips demo, submission
 - **Overall status:** IMPLEMENTED; core ledger, rules and screens verified locally on 2026-10-31; a live demo agent run failed on 2026-11-01. Groq tool calling passed a direct provider check on 2026-11-02; production Groq variables were saved on 2026-11-02, but the initial production run failed because the first request exceeded Groq's 8,000 TPM limit; a focused action surface and 1,800-character tool results completed local daily-overview and close-day conversations. A production synthetic sample shop completed a read-only `get-shop-overview` conversation with a tool result, reply text, SSE `done`, and no error codes on 2026-11-02.
-- **Last updated date:** 2026-11-02
+- **Last updated date:** 2026-11-05
 
 ## Git State
 
@@ -66,6 +66,10 @@ Keep this file concise and evidence-based. Update current state in place, append
 
 | Date | Command or check | Environment | Result | Evidence or notes |
 |---|---|---|---|---|
+| 2026-11-05 | `pnpm exec vitest run` | workspace, Node 22 | VERIFIED 32/32 | adds whole-word matching, look-alike names, open-promise tests |
+| 2026-11-05 | `bash scripts/verify-rules.sh` | PGlite via action CLI | VERIFIED 40/40 | adds similar_customer, newCustomer, cleared-promise checks; the new checks fail on the previous code (34/39) |
+| 2026-11-05 | `pnpm typecheck`, `pnpm agent-native:doctor` | workspace | VERIFIED clean | |
+| 2026-11-05 | Playwright (Chrome headless), 1280px and 390px | dev server, auth disabled | VERIFIED | sale dialog: typo → "Use Mama Ngozi" posts to her; fuller name → "is new" opens a new account; no horizontal overflow |
 | 2026-11-02 | Synthetic sample-shop agent SSE | production | VERIFIED daily overview | Groq selected from Vercel env; `get-shop-overview` tool result, reply text, final `done`, no error codes |
 | 2026-10-31 | `pnpm exec vitest --run` | workspace, Node 22 | VERIFIED 18/18 | money, matching, time/DST, reminder machine, phone/wa.me |
 | 2026-10-31 | `bash scripts/verify-rules.sh` | dev server + PGlite | VERIFIED 18/18 | stock, credit, overpayment, voids, counts, reminders, uiOnly, reconcile |
@@ -85,6 +89,12 @@ Keep this file concise and evidence-based. Update current state in place, append
 - **Unverified claims:** agent conversation quality and tool choice; scheduled automation; hosted deploy
 
 ## Decision Log
+
+### 2026-11-05 — Ask before guessing a customer; promises end when a debt is cleared
+- **Decision:** (1) Partial name matches use whole words only, and for customers a longer name never resolves to a shorter one ("Ada Obi" ≠ "Ada"). A new name that looks like an existing customer (typo within 1–2 letters, or a fuller name) fails with `similar_customer` until the owner confirms with `newCustomer` (agent tool arg and a sale-dialog prompt). (2) A customer's promised day comes only from credit still open since their balance last reached zero.
+- **Reason:** substring matching put "Adaeze" on Ada's account and "Chinedum" on Chinedu's; a typo silently opened a second account and skipped credit sense. Old promises from cleared debts made good payers look late, held their credit and drafted reminders at the evening close.
+- **Evidence:** vitest 32/32, verify-rules 40/40 (new checks fail on the previous code), typecheck and doctor clean, browser smoke at 1280px and 390px.
+- **Status:** IMPLEMENTED on branch `fix/customer-matching-open-promises`; production unchanged until merged
 
 ### 2026-11-02 — Focus the Groq agent on shop actions
 - **Decision:** Expose eight shop actions to the chat agent, shorten its instruction, and cap tool results at 1,800 characters. The manual Stock screen handles restocks; the owner-only reminder controls remain in the UI.

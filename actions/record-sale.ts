@@ -22,6 +22,7 @@ const errors = defineActionErrors(
   "unknown_product",
   "ambiguous_product",
   "ambiguous_customer",
+  "similar_customer",
   "price_missing",
   "invalid_amount",
   "invalid_quantity",
@@ -33,7 +34,7 @@ const errors = defineActionErrors(
 
 export default defineAction({
   description:
-    "Record a sale: what was sold, to whom, and how much was paid now. Any unpaid remainder goes on the customer's credit. Rejects with credit_check (409) when more credit would go to someone well past their promised date or over their limit: tell the owner the reason in one line and ask; only if they agree, call again with confirmCredit: true. Rejects with insufficient_stock (409) when stock would go below zero, credit_needs_customer when part is unpaid and no customer is named, and unknown_product/ambiguous_product when a product name doesn't resolve: report these to the user, don't guess.",
+    "Record a sale: what was sold, to whom, and how much was paid now. Any unpaid remainder goes on the customer's credit. Rejects with credit_check (409) when more credit would go to someone well past their promised date or over their limit: tell the owner the reason in one line and ask; only if they agree, call again with confirmCredit: true. Rejects with insufficient_stock (409) when stock would go below zero, credit_needs_customer when part is unpaid and no customer is named, and unknown_product/ambiguous_product when a product name doesn't resolve: report these to the user, don't guess. Rejects with similar_customer (409) when a new name looks like an existing customer (a typo, or a fuller name): ask the owner which one; use the existing name, or only if they say it is someone new, call again with newCustomer: true.",
   schema: z.object({
     shopId: shopIdArg,
     lines: z
@@ -56,6 +57,7 @@ export default defineAction({
       .optional()
       .describe("Customer id or name. Required when anything is left unpaid; optional for walk-in cash sales."),
     createCustomerIfMissing: flagArg("Create the customer if nobody by that name exists yet; defaults to true"),
+    newCustomer: flagArg("Only after a similar_customer warning, when the owner says this name is a new customer"),
     paid: z.coerce
       .number()
       .nonnegative()
@@ -76,6 +78,7 @@ export default defineAction({
       lines: args.lines,
       customer: args.customer,
       createCustomerIfMissing: flag(args.createCustomerIfMissing, true),
+      newCustomer: flag(args.newCustomer, false),
       paid: args.paid,
       method: args.method,
       dueDate: args.dueDate,

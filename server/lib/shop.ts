@@ -3,7 +3,7 @@ import { accessFilter } from "@agent-native/core/sharing";
 import { and, asc, eq } from "drizzle-orm";
 
 import { getDb, schema } from "../db/index.js";
-import { matchByName } from "./match.js";
+import { lookalikes, matchByName } from "./match.js";
 import { MoneyError, toKobo } from "./money.js";
 import { TimeError, toUtcIso } from "./time.js";
 
@@ -199,12 +199,16 @@ export async function loadCustomers(shopId: string): Promise<CustomerRow[]> {
 
 export type CustomerResolution = { existing: CustomerRow } | { create: string };
 
+/** People are matched more strictly than products: "Ada Obi" never resolves to "Ada". */
+export const CUSTOMER_MATCH = { longerQuery: false } as const;
+
 export function resolveCustomer(
   customers: CustomerRow[],
   ref: string,
   createIfMissing: boolean,
+  options: { confirmedNew?: boolean } = {},
 ): CustomerResolution {
-  const result = matchByName(customers, ref);
+  const result = matchByName(customers, ref, CUSTOMER_MATCH);
   if (result.kind === "match") return { existing: result.item };
   if (result.kind === "ambiguous") {
     throw new NoWriteError(
@@ -216,6 +220,20 @@ export function resolveCustomer(
     const name = ref.trim().replace(/\s+/g, " ");
     if (name.length < 2 || name.length > 80) {
       throw new NoWriteError("Customer name must be 2–80 characters.", { errorCode: "invalid_name", statusCode: 400 });
+    }
+    // A typo or a fuller name for someone already in the books would open a
+    // second account and split their debt, so ask before creating.
+    const similar = options.confirmedNew ? [] : lookalikes(customers, name);
+    if (similar.length) {
+      const names = similar.map((c) => c.name).join(" or ");
+      throw new NoWriteError(
+        `"${name}" looks like ${names}, who is already a customer. Use that name, or if ${name} is someone new, record it again with newCustomer.`,
+        {
+          errorCode: "similar_customer",
+          statusCode: 409,
+          details: { name, candidates: similar.map((c) => ({ id: c.id, name: c.name })) },
+        },
+      );
     }
     return { create: name };
   }
